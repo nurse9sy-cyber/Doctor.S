@@ -176,19 +176,34 @@
       <div class="absolute -left-10 -bottom-10 w-36 h-36 bg-clinic-500/20 rounded-full blur-2xl"></div>
       
       <div class="relative z-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-        <!-- Status & Hours -->
-        <div class="space-y-1">
-          <div class="flex items-center gap-2">
+        <!-- Status, Hours & Location -->
+        <div class="space-y-1.5 flex-1 min-w-0">
+          <div class="flex items-center gap-2 flex-wrap">
             <span id="bookingStatusPill" class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
               <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
               الحجز متاح الآن
             </span>
-            <span class="text-[11px] text-slate-300" id="bannerDoctorName">عيادة د. سعيد</span>
+            <span class="text-[11px] text-slate-300 font-bold" id="bannerDoctorName">عيادة د. سعيد</span>
           </div>
-          <p class="text-xs text-slate-300 leading-snug">
-            أيام الدوام: <strong class="text-teal-300" id="bannerDays">السبت إلى الخميس</strong> | 
-            من <strong class="text-teal-300" id="bannerStartTime">12:00</strong> إلى <strong class="text-teal-300" id="bannerEndTime">18:00</strong>
-          </p>
+
+          <!-- Custom Schedule Notes & Working Days -->
+          <div class="text-xs text-slate-200 leading-snug space-y-1">
+            <p class="text-teal-300 font-bold flex items-start sm:items-center gap-1.5">
+              <span class="flex-shrink-0">⏰</span>
+              <span id="bannerScheduleNotesText">الدوام: من الساعة 12:00 ظهراً إلى 18:00 مساءً</span>
+            </p>
+            <p class="text-[11px] text-slate-300 flex items-center gap-1.5">
+              <span>📅</span>
+              <span>أيام الدوام: <strong class="text-teal-300" id="bannerDays">السبت إلى الخميس</strong></span>
+            </p>
+            <!-- Clinic Location & Phone integrated into banner -->
+            <p class="text-[11px] text-slate-300 flex items-center gap-1.5 flex-wrap">
+              <span>📍</span>
+              <span>الموقع: <strong class="text-teal-200 font-bold" id="bannerLocationText">حلب - شارع فيصل</strong></span>
+              <span class="text-slate-500">|</span>
+              <span>هاتف: <strong class="text-teal-200 font-bold" dir="ltr" id="bannerPhoneText">0991234567</strong></span>
+            </p>
+          </div>
         </div>
 
         <!-- Seats Counter Box -->
@@ -372,52 +387,6 @@
           </div>
 
         </form>
-      </div>
-
-      <!-- Clinic Information Card -->
-      <div class="bg-white rounded-2xl p-4 border border-slate-200/90 shadow-sm space-y-3">
-        <h3 class="text-xs font-bold text-slate-900 flex items-center gap-2">
-          <span class="text-clinic-600">📍</span> بيانات العيادة وموقع الاستقبال
-        </h3>
-        
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs text-slate-600">
-          <div class="p-2.5 rounded-xl bg-slate-50 flex items-center gap-2">
-            <span class="text-clinic-600 font-bold">🏢</span>
-            <div>
-              <span class="text-[10px] text-slate-400 block">العنوان والمقر:</span>
-              <span id="cardAddress" class="font-bold text-slate-800">حلب - شارع فيصل</span>
-            </div>
-          </div>
-
-          <div class="p-2.5 rounded-xl bg-slate-50 flex items-center gap-2">
-            <span class="text-clinic-600 font-bold">📞</span>
-            <div>
-              <span class="text-[10px] text-slate-400 block">هاتف العيادة المباشر:</span>
-              <span id="cardPhone" dir="ltr" class="font-bold text-slate-800">0991234567</span>
-            </div>
-          </div>
-
-          <div class="p-2.5 rounded-xl bg-slate-50 flex items-center gap-2">
-            <span class="text-clinic-600 font-bold">📅</span>
-            <div>
-              <span class="text-[10px] text-slate-400 block">أيام الاستقبال:</span>
-              <span id="cardWorkDays" class="font-bold text-slate-800">السبت إلى الخميس</span>
-            </div>
-          </div>
-
-          <div class="p-2.5 rounded-xl bg-slate-50 flex items-center gap-2">
-            <span class="text-clinic-600 font-bold">⏰</span>
-            <div>
-              <span class="text-[10px] text-slate-400 block">ساعات العمل:</span>
-              <span id="cardWorkHours" class="font-bold text-slate-800">12:00 - 18:00</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="text-[10px] text-slate-500 bg-teal-50/50 p-2 rounded-xl border border-teal-100 flex items-start gap-1.5">
-          <span class="text-clinic-600 font-bold">ℹ️</span>
-          <span>يرجى الحضور قبل الموعد بـ 10 دقائق لترتيب الدور. الحجز يقفل تلقائياً فور اكتمال المقاعد.</span>
-        </div>
       </div>
 
     </section>
@@ -869,7 +838,7 @@
         <!-- Hours -->
         <div class="grid grid-cols-2 gap-2.5">
           <div>
-            <label class="block font-bold text-slate-700 mb-1">ساعة بدء الدوام</label>
+            <label class="block font-bold text-slate-700 mb-1">ساعة بدء الدوام (لتوليد الخانات)</label>
             <input type="time" id="settingStartHour" required value="12:00"
               class="w-full px-3 py-2 rounded-xl border border-slate-300 font-bold">
           </div>
@@ -879,6 +848,14 @@
             <input type="time" id="settingEndHour" required value="18:00"
               class="w-full px-3 py-2 rounded-xl border border-slate-300 font-bold">
           </div>
+        </div>
+
+        <!-- Custom Schedule Notes & Shifts -->
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">ملاحظات ومواعيد الدوام المخصصة (فترات العمل)</label>
+          <textarea id="settingScheduleNotes" rows="2" placeholder="مثال: من الساعة 9:00 صباحاً إلى 3:00 بعد الظهر، ومن الساعة 6:00 مساءً إلى 9:00 ليلاً"
+            class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-clinic-500"></textarea>
+          <p class="text-[10px] text-slate-500 mt-1">تظهر هذه المواعيد والتفاصيل فوراً للمريض في شريط الحجز العلوي كأوقات الدوام الرسمية.</p>
         </div>
 
         <!-- Work Days -->
@@ -1009,6 +986,7 @@
       specialty: "جراحة وزراعة وتجميل الأسنان",
       startHour: "12:00",
       endHour: "18:00",
+      scheduleNotes: "من الساعة 9:00 صباحاً إلى 3:00 بعد الظهر، ومن الساعة 6:00 مساءً إلى 9:00 ليلاً",
       workDays: ["sat", "sun", "mon", "tue", "wed", "thu"],
       maxDailyCapacity: 15,
       slotDuration: 45,
@@ -1103,20 +1081,30 @@
       document.getElementById('bannerDoctorName').textContent = `عيادة ${fullTitle} - ${cfg.specialty}`;
       document.getElementById('footerClinicName').textContent = `عيادة ${fullTitle}`;
 
-      document.getElementById('bannerStartTime').textContent = cfg.startHour;
-      document.getElementById('bannerEndTime').textContent = cfg.endHour;
-      document.getElementById('cardWorkHours').textContent = `${cfg.startHour} - ${cfg.endHour}`;
+      // أوقات وملاحظات الدوام
+      const bannerScheduleNotes = document.getElementById('bannerScheduleNotesText');
+      if (bannerScheduleNotes) {
+        if (cfg.scheduleNotes && cfg.scheduleNotes.trim() !== "") {
+          bannerScheduleNotes.textContent = cfg.scheduleNotes.trim();
+        } else {
+          bannerScheduleNotes.textContent = `الدوام: من الساعة ${cfg.startHour} إلى ${cfg.endHour}`;
+        }
+      }
+
+      // العنوان والهاتف في شريط التنبيه العلوي
+      const bannerLocation = document.getElementById('bannerLocationText');
+      if (bannerLocation) bannerLocation.textContent = cfg.address || "حلب - شارع فيصل";
+
+      const bannerPhone = document.getElementById('bannerPhoneText');
+      if (bannerPhone) bannerPhone.textContent = cfg.phone || "0991234567";
 
       const daysText = cfg.workDays.map(d => dayNamesAr[d]).join('، ');
       document.getElementById('bannerDays').textContent = daysText;
-      document.getElementById('cardWorkDays').textContent = daysText;
       document.getElementById('navWorkingHoursSummary').innerHTML = `
         <span class="inline-block w-1.5 h-1.5 rounded-full bg-emerald-500 flex-shrink-0"></span>
         ${daysText} (${cfg.startHour} - ${cfg.endHour})
       `;
 
-      document.getElementById('cardAddress').textContent = cfg.address;
-      document.getElementById('cardPhone').textContent = cfg.phone;
       document.getElementById('maxCapacityDisplay').textContent = cfg.maxDailyCapacity;
 
       const seatsContainer = document.getElementById('seatsCounterContainer');
@@ -1692,6 +1680,7 @@
       document.getElementById('settingSpecialty').value = clinicConfig.specialty || "جراحة وزراعة وتجميل الأسنان";
       document.getElementById('settingStartHour').value = clinicConfig.startHour || "12:00";
       document.getElementById('settingEndHour').value = clinicConfig.endHour || "18:00";
+      document.getElementById('settingScheduleNotes').value = clinicConfig.scheduleNotes || "";
       document.getElementById('settingMaxCapacity').value = clinicConfig.maxDailyCapacity || 15;
       document.getElementById('settingSlotDuration').value = clinicConfig.slotDuration || 45;
       document.getElementById('settingAddress').value = clinicConfig.address || "حلب - شارع فيصل";
@@ -1720,6 +1709,7 @@
         specialty: document.getElementById('settingSpecialty').value.trim(),
         startHour: document.getElementById('settingStartHour').value,
         endHour: document.getElementById('settingEndHour').value,
+        scheduleNotes: document.getElementById('settingScheduleNotes').value.trim(),
         workDays: selectedDays,
         maxDailyCapacity: Number(document.getElementById('settingMaxCapacity').value) || 15,
         slotDuration: Number(document.getElementById('settingSlotDuration').value) || 45,
