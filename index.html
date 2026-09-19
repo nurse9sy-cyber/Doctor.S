@@ -1,0 +1,2172 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>حجز موعد - عيادة طب الأسنان</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: Cairo -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  
+  <!-- Firebase SDK (Compat Libraries for Web) -->
+  <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Cairo', 'sans-serif'],
+          },
+          colors: {
+            clinic: {
+              50: '#f0fdfa',
+              100: '#ccfbf1',
+              500: '#14b8a6',
+              600: '#0d9488',
+              700: '#0f766e',
+              800: '#115e59',
+              900: '#134e4a',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  
+  <style>
+    body {
+      font-family: 'Cairo', sans-serif;
+      background-color: #f8fafc;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+    }
+    
+    input, select, textarea {
+      font-size: 16px !important;
+    }
+    @media (min-width: 640px) {
+      input, select, textarea {
+        font-size: 14px !important;
+      }
+    }
+
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 5px;
+      height: 5px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: #f1f5f9;
+      border-radius: 8px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 8px;
+    }
+
+    @media print {
+      body * {
+        visibility: hidden !important;
+      }
+      #printablePdfReport, #printablePdfReport * {
+        visibility: visible !important;
+      }
+      #printablePdfReport {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        margin: 0;
+        padding: 20px;
+        background: white !important;
+        color: black !important;
+      }
+      .no-print {
+        display: none !important;
+      }
+      @page {
+        size: A4;
+        margin: 10mm;
+      }
+    }
+  </style>
+</head>
+<body class="min-h-screen text-slate-800 flex flex-col justify-between select-none pb-20 sm:pb-8">
+
+  <!-- Mobile-Optimized Top App Bar -->
+  <header class="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200/80 shadow-sm no-print">
+    <div class="max-w-4xl mx-auto px-4 py-2.5 sm:py-3 flex items-center justify-between gap-3">
+      
+      <!-- Clinic Brand & Info (Synchronized Realtime) -->
+      <div class="flex items-center gap-2.5 min-w-0">
+        <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-clinic-600 to-teal-400 text-white flex items-center justify-center shadow-md shadow-clinic-500/20 text-lg flex-shrink-0">
+          🦷
+        </div>
+        <div class="truncate">
+          <div class="flex items-center gap-1.5 truncate">
+            <h1 class="text-sm sm:text-base font-extrabold text-slate-900 truncate" id="navClinicTitle">عيادة طب الأسنان</h1>
+            <span class="text-[9px] sm:text-[10px] bg-clinic-100 text-clinic-800 px-1.5 py-0.5 rounded-full font-bold flex-shrink-0" id="navDoctorGenderBadge">طبيب معتمد</span>
+          </div>
+          <p class="text-[10px] sm:text-xs text-slate-500 flex items-center gap-1 font-medium truncate mt-0.5" id="navWorkingHoursSummary">
+            <span class="inline-block w-1.5 h-1.5 rounded-full bg-emerald-500 flex-shrink-0"></span>
+            الدوام: السبت - الخميس (12:00 - 18:00)
+          </p>
+        </div>
+      </div>
+
+      <!-- Doctor Authentication Controls -->
+      <div class="flex items-center gap-1.5 flex-shrink-0">
+        
+        <!-- Discreet Doctor Login Trigger (Visible only when logged out) -->
+        <button id="doctorLoginTriggerBtn" onclick="openDoctorAuthModal()" 
+          class="flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-slate-500 hover:text-slate-800 bg-slate-100 hover:bg-slate-200 transition-all text-xs font-bold"
+          title="دخول الطبيب/ة المسؤول">
+          <span>🔒</span>
+          <span class="text-[11px]">الطبيب/ة</span>
+        </button>
+
+        <!-- Doctor Controls Toolbar (Visible only after Firebase Authentication) -->
+        <div id="doctorAuthBar" class="hidden flex items-center gap-1 sm:gap-2">
+          
+          <!-- System Push Notification Permissions -->
+          <button id="systemNotifBtn" onclick="requestSystemNotificationPermission()" title="تفعيل إشعارات النظام وسطح المكتب" 
+            class="p-2 text-slate-600 hover:text-clinic-600 bg-slate-100 rounded-xl transition-all text-xs flex items-center gap-1">
+            <span id="systemNotifIcon">🔔</span>
+            <span class="hidden md:inline text-[10px] font-bold">إشعارات النظام</span>
+          </button>
+
+          <!-- Audio Chime Toggle -->
+          <button id="soundToggleBtn" onclick="toggleSound()" title="تشغيل/كتم صوت الرنين" 
+            class="p-2 text-slate-600 hover:text-clinic-600 bg-slate-100 rounded-xl transition-all text-xs">
+            <span id="soundIcon">🔊</span>
+          </button>
+
+          <!-- Exit Doctor Mode -->
+          <button onclick="handleDoctorLogout()" 
+            class="px-2.5 py-1.5 rounded-xl text-rose-700 bg-rose-50 hover:bg-rose-100 border border-rose-200 text-xs font-bold transition-all flex items-center gap-1"
+            title="تسجيل خروج">
+            <span>🚪</span>
+            <span class="hidden sm:inline">خروج</span>
+          </button>
+
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- Doctor Sub-Tabs Navigation (Visible only to authenticated Doctor) -->
+    <div id="doctorNavTabs" class="hidden border-t border-slate-100 bg-slate-50/80 px-4 py-1.5 no-print">
+      <div class="max-w-4xl mx-auto flex items-center justify-center gap-2">
+        <button id="tabDoctorLive" onclick="switchDoctorView('dashboard')" 
+          class="flex-1 py-1.5 px-3 rounded-lg text-xs font-bold transition-all bg-white text-clinic-700 shadow-sm border border-slate-200 text-center relative">
+          حجوزات اليوم
+          <span id="navNotificationBadge" class="hidden absolute -top-1 -right-1 bg-rose-500 text-white text-[9px] w-4 h-4 rounded-full flex items-center justify-center font-bold">0</span>
+        </button>
+        <button id="tabDoctorAnalytics" onclick="switchDoctorView('analytics')" 
+          class="flex-1 py-1.5 px-3 rounded-lg text-xs font-semibold transition-all text-slate-600 hover:text-slate-900 border border-transparent text-center">
+          📊 الإحصائيات والـ PDF
+        </button>
+        <button onclick="openClinicSettingsModal()" 
+          class="flex-1 py-1.5 px-3 rounded-lg text-xs font-semibold transition-all text-slate-600 hover:text-slate-900 border border-transparent text-center">
+          ⚙️ الإعدادات
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="max-w-4xl mx-auto px-3.5 sm:px-6 py-4 w-full flex-grow no-print">
+
+    <!-- Firebase Connection Status Ribbon -->
+    <div id="firebaseStatusBanner" class="mb-3 px-3 py-1.5 rounded-xl text-[11px] font-bold flex items-center justify-between transition-all bg-slate-100 text-slate-600 border border-slate-200">
+      <div class="flex items-center gap-1.5">
+        <span id="firebaseStatusDot" class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
+        <span id="firebaseStatusText">جاري الاتصال السحابي بالعيادة...</span>
+      </div>
+      <span class="text-[9px] bg-white px-2 py-0.5 rounded shadow-sm border border-slate-200 font-mono" id="cloudModeBadge">Firebase Sync</span>
+    </div>
+
+    <!-- Capacity & Schedule Alert Card -->
+    <section class="mb-4 bg-gradient-to-l from-slate-900 via-clinic-900 to-slate-900 text-white p-4 sm:p-5 rounded-2xl shadow-lg relative overflow-hidden">
+      <div class="absolute -left-10 -bottom-10 w-36 h-36 bg-clinic-500/20 rounded-full blur-2xl"></div>
+      
+      <div class="relative z-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+        <!-- Status & Hours -->
+        <div class="space-y-1">
+          <div class="flex items-center gap-2">
+            <span id="bookingStatusPill" class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+              الحجز متاح الآن
+            </span>
+            <span class="text-[11px] text-slate-300" id="bannerDoctorName">عيادة طب الأسنان</span>
+          </div>
+          <p class="text-xs text-slate-300 leading-snug">
+            أيام الدوام: <strong class="text-teal-300" id="bannerDays">السبت إلى الخميس</strong> | 
+            من <strong class="text-teal-300" id="bannerStartTime">12:00</strong> إلى <strong class="text-teal-300" id="bannerEndTime">18:00</strong>
+          </p>
+        </div>
+
+        <!-- Seats Counter Box (Controlled by showRemainingSeatsToPatients) -->
+        <div id="seatsCounterContainer" class="w-full sm:w-auto flex items-center justify-between sm:justify-end gap-3 bg-white/10 px-3 py-2 rounded-xl border border-white/10 transition-all">
+          <div class="text-right">
+            <div class="text-[10px] text-slate-300">المقاعد المتبقية لليوم</div>
+            <div class="flex items-baseline gap-1">
+              <span id="remainingSeatsBadge" class="text-2xl font-black text-teal-300 leading-none">15</span>
+              <span class="text-[10px] text-slate-400">/ <span id="maxCapacityDisplay">15</span></span>
+            </div>
+          </div>
+          <div class="w-24 bg-slate-700/60 rounded-full h-2 overflow-hidden">
+            <div id="capacityProgressBar" class="bg-gradient-to-r from-emerald-400 to-teal-400 h-2 rounded-full transition-all duration-500" style="width: 100%;"></div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ========================================================================= -->
+    <!-- PATIENT VIEW: EXCLUSIVELY VISIBLE TO PATIENTS (واجهة المريض المعزولة) -->
+    <!-- ========================================================================= -->
+    <section id="viewPatient" class="space-y-4 transition-all duration-300">
+      
+      <!-- Booking Form Card -->
+      <div class="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 border border-slate-200/90 shadow-sm">
+        <div class="border-b border-slate-100 pb-3 mb-4 flex items-center justify-between">
+          <div>
+            <h2 class="text-base sm:text-lg font-bold text-slate-900">حجز موعد طبي في العيادة</h2>
+            <p class="text-[11px] sm:text-xs text-slate-500 mt-0.5">يرجى تعبئة البيانات لتأكيد الحجز فوراً في جدول الطبيب.</p>
+          </div>
+          <span class="text-[10px] font-bold px-2.5 py-1 bg-clinic-50 text-clinic-700 rounded-lg border border-clinic-200">
+            تأكيد لحظي
+          </span>
+        </div>
+
+        <form id="bookingForm" onsubmit="handlePatientBooking(event)" class="space-y-4">
+          
+          <!-- Patient Classification -->
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1.5">نوع الزيارة <span class="text-rose-500">*</span></label>
+            <div class="grid grid-cols-2 gap-2.5">
+              <label class="cursor-pointer">
+                <input type="radio" name="patientType" value="new" checked class="peer sr-only">
+                <div class="p-3 rounded-xl border-2 border-slate-200 text-center transition-all peer-checked:border-clinic-600 peer-checked:bg-clinic-50 peer-checked:text-clinic-800">
+                  <div class="font-bold text-xs sm:text-sm">مريض جديد</div>
+                  <div class="text-[10px] text-slate-500 mt-0.5">أول زيارة للعيادة</div>
+                </div>
+              </label>
+
+              <label class="cursor-pointer">
+                <input type="radio" name="patientType" value="followup" class="peer sr-only">
+                <div class="p-3 rounded-xl border-2 border-slate-200 text-center transition-all peer-checked:border-clinic-600 peer-checked:bg-clinic-50 peer-checked:text-clinic-800">
+                  <div class="font-bold text-xs sm:text-sm">مراجعة / متابعة</div>
+                  <div class="text-[10px] text-slate-500 mt-0.5">لديك ملف سابق بالعيادة</div>
+                </div>
+              </label>
+            </div>
+          </div>
+
+          <!-- Patient Name & Phone -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1" for="patientName">
+                اسم المريض الثلاثي <span class="text-rose-500">*</span>
+              </label>
+              <input type="text" id="patientName" required placeholder="مثال: يوسف خالد النجار"
+                class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-clinic-500 focus:border-clinic-500 transition-all text-slate-900">
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1" for="patientPhone">
+                رقم الهاتف للتأكيد <span class="text-rose-500">*</span>
+              </label>
+              <input type="tel" id="patientPhone" required placeholder="09XXXXXXXX" dir="ltr" inputmode="tel"
+                class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-clinic-500 focus:border-clinic-500 transition-all text-slate-900 text-right">
+            </div>
+          </div>
+
+          <!-- Dental Services Selection Grid -->
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1.5">الخدمة أو الإجراء المطلوب <span class="text-rose-500">*</span></label>
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-2" id="servicesGrid">
+              
+              <button type="button" onclick="selectDentalService('كشف وفحص ألم طارئ', this)"
+                class="service-card p-2.5 rounded-xl border-2 border-clinic-600 bg-clinic-50 text-clinic-800 text-right transition-all">
+                <div class="text-base">🩺</div>
+                <div class="text-xs font-bold mt-0.5">كشف وفحص طارئ</div>
+                <div class="text-[9px] text-slate-500">تشخيص وتسكين الألم</div>
+              </button>
+
+              <button type="button" onclick="selectDentalService('علاج عصب وحشوات تجميلية', this)"
+                class="service-card p-2.5 rounded-xl border border-slate-200 bg-white text-slate-700 text-right transition-all">
+                <div class="text-base">🦷</div>
+                <div class="text-xs font-bold mt-0.5">حشوات وعلاج عصب</div>
+                <div class="text-[9px] text-slate-500">سحب عصب وحشوة</div>
+              </button>
+
+              <button type="button" onclick="selectDentalService('تنظيف وتلميع وتبييض الأسنان', this)"
+                class="service-card p-2.5 rounded-xl border border-slate-200 bg-white text-slate-700 text-right transition-all">
+                <div class="text-base">✨</div>
+                <div class="text-xs font-bold mt-0.5">تنظيف وتبييض</div>
+                <div class="text-[9px] text-slate-500">إزالة الجير والتبييض</div>
+              </button>
+
+              <button type="button" onclick="selectDentalService('تقويم الأسنان واستشارة', this)"
+                class="service-card p-2.5 rounded-xl border border-slate-200 bg-white text-slate-700 text-right transition-all">
+                <div class="text-base">📐</div>
+                <div class="text-xs font-bold mt-0.5">تقويم الأسنان</div>
+                <div class="text-[9px] text-slate-500">استشارة أو جلسة شد</div>
+              </button>
+
+              <button type="button" onclick="selectDentalService('خلع وجراحة فموية', this)"
+                class="service-card p-2.5 rounded-xl border border-slate-200 bg-white text-slate-700 text-right transition-all">
+                <div class="text-base">⚡</div>
+                <div class="text-xs font-bold mt-0.5">خلع وجراحة فموية</div>
+                <div class="text-[9px] text-slate-500">ضرس عقل أو قلع</div>
+              </button>
+
+              <button type="button" onclick="selectDentalService('زراعة وتركيبات وتلبيس (Zircon)', this)"
+                class="service-card p-2.5 rounded-xl border border-slate-200 bg-white text-slate-700 text-right transition-all">
+                <div class="text-base">👑</div>
+                <div class="text-xs font-bold mt-0.5">زراعة وتركيبات</div>
+                <div class="text-[9px] text-slate-500">تعويض الأسنان والزرع</div>
+              </button>
+
+            </div>
+            <input type="hidden" id="selectedServiceInput" value="كشف وفحص ألم طارئ" required>
+          </div>
+
+          <!-- Party Size & Dynamic Slots Selection -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-slate-50 p-3.5 rounded-xl border border-slate-200">
+            
+            <!-- Number of Persons -->
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1" for="partySizeSelect">
+                عدد المقاعد / الأشخاص <span class="text-rose-500">*</span>
+              </label>
+              <select id="partySizeSelect" onchange="handlePartySizeChange()"
+                class="w-full px-3 py-2 rounded-xl border border-slate-300 bg-white focus:outline-none focus:ring-2 focus:ring-clinic-500 text-xs font-bold">
+                <option value="1">شخص واحد (مريض واحد)</option>
+                <option value="2">شخصان (حجز مرافق/عائلي - مقعدان)</option>
+                <option value="3">3 أشخاص (حجز عائلي - 3 مقاعد)</option>
+                <option value="4">4 أشخاص (حجز عائلي - 4 مقاعد)</option>
+              </select>
+              <p id="partySizeAlert" class="text-[10px] text-slate-500 mt-1">يُحسم العدد فوراً من طاقة العيادة لليوم.</p>
+            </div>
+
+            <!-- Dynamic Working Hours Slots -->
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1" for="timeSlotSelect">
+                الموعد المتاح ضمن ساعات دوام العيادة <span class="text-rose-500">*</span>
+              </label>
+              <select id="timeSlotSelect" required
+                class="w-full px-3 py-2 rounded-xl border border-slate-300 bg-white focus:outline-none focus:ring-2 focus:ring-clinic-500 text-xs font-bold">
+                <!-- Dynamically generated based on Start & End Hours -->
+              </select>
+              <p class="text-[10px] text-slate-500 mt-1">المواعيد تتولد آلياً استناداً لدوام الطبيب.</p>
+            </div>
+
+          </div>
+
+          <!-- Notes -->
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1" for="patientNotes">
+              ملاحظات أو وصف للألم (اختياري)
+            </label>
+            <textarea id="patientNotes" rows="2" placeholder="مثال: ألم مستمر بالجهة اليمنى السفلية..."
+              class="w-full px-3.5 py-2 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-clinic-500 text-xs"></textarea>
+          </div>
+
+          <!-- Submit Button -->
+          <div class="pt-1">
+            <button type="submit" id="submitBookingBtn"
+              class="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-clinic-600 to-teal-500 hover:from-clinic-700 hover:to-teal-600 text-white font-bold text-sm shadow-md shadow-clinic-500/25 transition-all flex items-center justify-center gap-2 active:scale-[0.98]">
+              <span>تأكيد الحجز فوراً</span>
+              <svg class="w-4 h-4 rtl:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+              </svg>
+            </button>
+            <p class="text-center text-[10px] text-slate-400 mt-2">
+              🔒 تسجيل مباشر في جدول العيادة مع إشعار فوري للطبيب وطاقم التمريض.
+            </p>
+          </div>
+
+        </form>
+      </div>
+
+      <!-- Clinic Information Card (Realtime updated from Doctor Settings) -->
+      <div class="bg-white rounded-2xl p-4 border border-slate-200/90 shadow-sm space-y-3">
+        <h3 class="text-xs font-bold text-slate-900 flex items-center gap-2">
+          <span class="text-clinic-600">📍</span> بيانات العيادة وموقع الاستقبال
+        </h3>
+        
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs text-slate-600">
+          <div class="p-2.5 rounded-xl bg-slate-50 flex items-center gap-2">
+            <span class="text-clinic-600 font-bold">🏢</span>
+            <div>
+              <span class="text-[10px] text-slate-400 block">العنوان والمقر:</span>
+              <span id="cardAddress" class="font-bold text-slate-800">حلب - شارع فيصل</span>
+            </div>
+          </div>
+
+          <div class="p-2.5 rounded-xl bg-slate-50 flex items-center gap-2">
+            <span class="text-clinic-600 font-bold">📞</span>
+            <div>
+              <span class="text-[10px] text-slate-400 block">هاتف العيادة المباشر:</span>
+              <span id="cardPhone" dir="ltr" class="font-bold text-slate-800">0991234567</span>
+            </div>
+          </div>
+
+          <div class="p-2.5 rounded-xl bg-slate-50 flex items-center gap-2">
+            <span class="text-clinic-600 font-bold">📅</span>
+            <div>
+              <span class="text-[10px] text-slate-400 block">أيام الاستقبال:</span>
+              <span id="cardWorkDays" class="font-bold text-slate-800">السبت إلى الخميس</span>
+            </div>
+          </div>
+
+          <div class="p-2.5 rounded-xl bg-slate-50 flex items-center gap-2">
+            <span class="text-clinic-600 font-bold">⏰</span>
+            <div>
+              <span class="text-[10px] text-slate-400 block">ساعات العمل:</span>
+              <span id="cardWorkHours" class="font-bold text-slate-800">12:00 - 18:00</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="text-[10px] text-slate-500 bg-teal-50/50 p-2 rounded-xl border border-teal-100 flex items-start gap-1.5">
+          <span class="text-clinic-600 font-bold">ℹ️</span>
+          <span>يرجى الحضور قبل الموعد بـ 10 دقائق لترتيب الدور. الحجز يقفل تلقائياً فور امتلاء المقاعد المتاحة.</span>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ========================================================================= -->
+    <!-- DOCTOR VIEW: LIVE DASHBOARD (ظاهر فقط للطبيب بعد المصادقة) -->
+    <!-- ========================================================================= -->
+    <section id="viewDoctorDashboard" class="hidden space-y-4">
+      
+      <!-- Doctor Top Action Bar -->
+      <div class="bg-white rounded-2xl p-4 border border-slate-200/90 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+            <h3 class="text-sm sm:text-base font-bold text-slate-900" id="doctorDashboardTitle">
+              لوحة تحكم الطبيب
+            </h3>
+          </div>
+          <p class="text-[11px] text-slate-500 mt-0.5">
+            متصل بالحساب: <span id="doctorLoggedInEmail" class="font-bold text-clinic-700">doctor@clinic.com</span>
+          </p>
+        </div>
+
+        <div class="flex items-center gap-2 w-full sm:w-auto">
+          <!-- Toggle Manual Lock -->
+          <button id="toggleLockBtn" onclick="toggleEmergencyLock()" 
+            class="flex-1 sm:flex-none px-3 py-2 rounded-xl text-xs font-bold border transition-all flex items-center justify-center gap-1.5 bg-rose-50 border-rose-200 text-rose-700 hover:bg-rose-100 shadow-sm">
+            <span id="lockIcon">🛑</span>
+            <span id="lockText">إيقاف الحجز مؤقتاً</span>
+          </button>
+
+          <!-- Reset Today -->
+          <button onclick="resetTodayAppointments()" class="px-3 py-2 text-xs font-semibold text-slate-600 hover:text-slate-800 bg-slate-100 rounded-xl transition-all">
+            تصفير اليوم ↺
+          </button>
+        </div>
+      </div>
+
+      <!-- Incoming Booking Alert Banner (Audio + Visual Pop) -->
+      <div id="doctorIncomingNotification" class="hidden bg-gradient-to-r from-teal-600 to-clinic-700 text-white p-3.5 rounded-2xl shadow-lg flex items-center justify-between gap-3 animate-pulse">
+        <div class="flex items-center gap-2.5 min-w-0">
+          <div class="w-8 h-8 rounded-xl bg-white/20 flex items-center justify-center text-lg flex-shrink-0">
+            🔔
+          </div>
+          <div class="truncate">
+            <div class="text-[10px] font-semibold text-teal-200">حجز جديد ورد إلى العيادة الآن!</div>
+            <div id="latestNotificationText" class="text-xs font-bold truncate">حجز جديد</div>
+          </div>
+        </div>
+        <button onclick="dismissNotificationBanner()" class="text-xs bg-white/20 hover:bg-white/30 px-3 py-1 rounded-lg text-white font-bold flex-shrink-0">
+          تم ✓
+        </button>
+      </div>
+
+      <!-- Metrics Row -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+        <div class="bg-white p-3 rounded-2xl border border-slate-200/80 shadow-sm text-center">
+          <div class="text-[10px] font-bold text-slate-400">إجمالي مرضى اليوم</div>
+          <div id="metricTotalPatients" class="text-xl font-black text-slate-800 mt-0.5">0</div>
+        </div>
+
+        <div class="bg-white p-3 rounded-2xl border border-slate-200/80 shadow-sm text-center">
+          <div class="text-[10px] font-bold text-slate-400">مرضى جدد</div>
+          <div id="metricNewPatients" class="text-xl font-black text-clinic-600 mt-0.5">0</div>
+        </div>
+
+        <div class="bg-white p-3 rounded-2xl border border-slate-200/80 shadow-sm text-center">
+          <div class="text-[10px] font-bold text-slate-400">مراجعات</div>
+          <div id="metricFollowupPatients" class="text-xl font-black text-amber-600 mt-0.5">0</div>
+        </div>
+
+        <div class="bg-white p-3 rounded-2xl border border-slate-200/80 shadow-sm text-center">
+          <div class="text-[10px] font-bold text-slate-400">المقاعد الشاغرة</div>
+          <div id="metricSeatsLeft" class="text-xl font-black text-emerald-600 mt-0.5">15</div>
+        </div>
+      </div>
+
+      <!-- Today's Appointments Registry -->
+      <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
+        <div class="p-3.5 border-b border-slate-100 flex flex-wrap items-center justify-between gap-2 bg-slate-50/50">
+          <div>
+            <h4 class="text-xs sm:text-sm font-bold text-slate-900">سجل حجوزات اليوم المتزامن</h4>
+            <span class="text-[10px] text-slate-400">تحديث لحظي ومباشر عبر Cloud Firestore</span>
+          </div>
+
+          <!-- Filters -->
+          <div class="flex items-center gap-1 text-[11px]">
+            <button onclick="filterAppointmentsTable('all')" id="filterAllBtn" class="px-2.5 py-1 rounded-lg bg-clinic-600 text-white font-bold">الكل</button>
+            <button onclick="filterAppointmentsTable('new')" id="filterNewBtn" class="px-2.5 py-1 rounded-lg bg-slate-200 text-slate-700 font-semibold">جديد</button>
+            <button onclick="filterAppointmentsTable('followup')" id="filterFollowBtn" class="px-2.5 py-1 rounded-lg bg-slate-200 text-slate-700 font-semibold">مراجعة</button>
+          </div>
+        </div>
+
+        <!-- Desktop Table -->
+        <div class="hidden sm:block overflow-x-auto custom-scrollbar">
+          <table class="w-full text-right text-xs">
+            <thead class="bg-slate-100/70 text-slate-600 font-bold border-b border-slate-200">
+              <tr>
+                <th class="py-2.5 px-3">#</th>
+                <th class="py-2.5 px-3">اسم المريض</th>
+                <th class="py-2.5 px-3">الهاتف</th>
+                <th class="py-2.5 px-3">النوع</th>
+                <th class="py-2.5 px-3">الخدمة المطلوبة</th>
+                <th class="py-2.5 px-3 text-center">المقاعد</th>
+                <th class="py-2.5 px-3">الموعد</th>
+                <th class="py-2.5 px-3 text-center">إجراء</th>
+              </tr>
+            </thead>
+            <tbody id="appointmentsTableBody" class="divide-y divide-slate-100 text-slate-700">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Mobile Adaptive Cards List -->
+        <div id="appointmentsMobileList" class="sm:hidden divide-y divide-slate-100 p-2 space-y-2">
+          <!-- Dynamically populated for small screens -->
+        </div>
+
+        <!-- Empty State -->
+        <div id="emptyTableState" class="hidden p-8 text-center">
+          <div class="text-3xl mb-1">📭</div>
+          <div class="text-xs font-bold text-slate-700">لا توجد حجوزات مسجلة لليوم حتى الآن</div>
+          <p class="text-[10px] text-slate-400 mt-0.5">الحجوزات التي يقوم بها المرضى ستظهر هنا فوراً مع رنين جرس التنبيه.</p>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ========================================================================= -->
+    <!-- DOCTOR VIEW: ANALYTICS & PDF (ظاهر فقط للطبيب بعد المصادقة) -->
+    <!-- ========================================================================= -->
+    <section id="viewDoctorAnalytics" class="hidden space-y-4">
+      
+      <!-- Analytics Header -->
+      <div class="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-sm space-y-3">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <div>
+            <h3 class="text-sm sm:text-base font-bold text-slate-900 flex items-center gap-1.5">
+              <span>📊</span>
+              <span>مركز الإحصائيات الشاملة والتقارير</span>
+            </h3>
+            <p class="text-[11px] text-slate-500">تحليل فوري لحركة العيادة مع استخراج تقرير PDF رسمي.</p>
+          </div>
+
+          <!-- Timeframe selector -->
+          <div class="bg-slate-100 p-1 rounded-xl flex items-center text-xs font-bold self-start sm:self-auto">
+            <button onclick="setAnalyticsTimeframe('week')" id="timeframeWeekBtn" class="px-2.5 py-1 rounded-lg bg-white text-clinic-700 shadow-sm transition-all">
+              الأسبوع
+            </button>
+            <button onclick="setAnalyticsTimeframe('month')" id="timeframeMonthBtn" class="px-2.5 py-1 rounded-lg text-slate-600 hover:text-slate-900 transition-all">
+              الشهر
+            </button>
+            <button onclick="setAnalyticsTimeframe('all')" id="timeframeAllBtn" class="px-2.5 py-1 rounded-lg text-slate-600 hover:text-slate-900 transition-all">
+              الكل
+            </button>
+          </div>
+        </div>
+
+        <!-- Action buttons row -->
+        <div class="flex flex-wrap items-center gap-2 pt-2 border-t border-slate-100">
+          <button onclick="printOrExportPdfReport()" class="flex-1 sm:flex-none px-3.5 py-2 rounded-xl text-xs font-bold bg-slate-900 hover:bg-slate-800 text-white shadow-sm transition-all flex items-center justify-center gap-1.5">
+            <span>🖨️ طباعة وحفظ تقرير PDF</span>
+          </button>
+          
+          <button onclick="exportAnalyticsCsv()" class="flex-1 sm:flex-none px-3 py-2 rounded-xl text-xs font-bold border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 transition-all flex items-center justify-center gap-1">
+            <span>📥 Excel/CSV</span>
+          </button>
+
+          <button onclick="loadAnalyticsDemoData()" class="px-3 py-2 rounded-xl text-xs font-bold border border-teal-200 bg-teal-50 text-teal-800 hover:bg-teal-100 transition-all">
+            <span>⚡ تجربة بيانات</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Key Analytics Metrics -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+        <div class="bg-white p-3.5 rounded-2xl border border-slate-200/80 shadow-sm">
+          <div class="text-[10px] font-bold text-slate-400">إجمالي المرضى</div>
+          <div class="text-xl font-black text-slate-800 mt-1" id="analyticsTotalBookings">0</div>
+          <div class="text-[9px] text-slate-500 mt-0.5" id="analyticsAvgPerDay">0 مريض/يوم</div>
+        </div>
+
+        <div class="bg-white p-3.5 rounded-2xl border border-slate-200/80 shadow-sm">
+          <div class="text-[10px] font-bold text-slate-400">نسبة الجدد</div>
+          <div class="text-xl font-black text-emerald-600 mt-1" id="analyticsNewRatio">0%</div>
+          <div class="text-[9px] text-slate-500 mt-0.5" id="analyticsNewCount">0 مريض جديد</div>
+        </div>
+
+        <div class="bg-white p-3.5 rounded-2xl border border-slate-200/80 shadow-sm">
+          <div class="text-[10px] font-bold text-slate-400">نسبة المراجعات</div>
+          <div class="text-xl font-black text-amber-600 mt-1" id="analyticsFollowupRatio">0%</div>
+          <div class="text-[9px] text-slate-500 mt-0.5" id="analyticsFollowupCount">0 مراجعة</div>
+        </div>
+
+        <div class="bg-white p-3.5 rounded-2xl border border-slate-200/80 shadow-sm">
+          <div class="text-[10px] font-bold text-slate-400">معدل الإشغال</div>
+          <div class="text-xl font-black text-sky-600 mt-1" id="analyticsUtilizationRate">0%</div>
+          <div class="text-[9px] text-slate-500 mt-0.5">من الطاقة القصوى</div>
+        </div>
+      </div>
+
+      <!-- Charts Breakdown -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <!-- Services Distribution -->
+        <div class="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-sm space-y-3">
+          <div class="flex items-center justify-between border-b border-slate-100 pb-2">
+            <h4 class="text-xs font-bold text-slate-900">🦷 الخدمات الأكثر طلباً</h4>
+            <span class="text-[10px] text-slate-400 font-semibold" id="servicesChartTotalBadge">0 إجراء</span>
+          </div>
+          <div id="servicesBarsContainer" class="space-y-2.5"></div>
+        </div>
+
+        <!-- Weekly Days Density -->
+        <div class="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-sm space-y-3">
+          <div class="flex items-center justify-between border-b border-slate-100 pb-2">
+            <h4 class="text-xs font-bold text-slate-900">📅 توزيع أيام الأسبوع</h4>
+            <span class="text-[10px] text-slate-400 font-semibold">كثافة الحضور</span>
+          </div>
+          <div id="daysBarsContainer" class="space-y-2.5"></div>
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- PRINTABLE PDF REPORT CONTAINER -->
+  <div id="printablePdfReport" class="hidden">
+    <div style="border-bottom: 2.5px solid #0d9488; padding-bottom: 14px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: flex-start;">
+      <div>
+        <h1 style="font-size: 22px; font-weight: 800; color: #0f766e; margin: 0;" id="pdfDoctorName">عيادة د. أيهم الحلبي</h1>
+        <p style="font-size: 12px; color: #475569; margin: 3px 0;" id="pdfSpecialty">جراحة وزراعة وتجميل الأسنان</p>
+        <p style="font-size: 11px; color: #64748b; margin: 0;" id="pdfClinicInfo">المقر: حلب - شارع فيصل | هاتف: 0991234567</p>
+      </div>
+      <div style="text-align: left; font-size: 11px; color: #334155;">
+        <div style="font-weight: bold; font-size: 14px; color: #0f766e;">تقرير العيادة الرسمي للإحصائيات والحجوزات</div>
+        <div>تاريخ التقرير: <span id="pdfPrintDate">2026-09-19</span></div>
+        <div>نطاق الفترة: <span id="pdfPeriodLabel">الأسبوع الحالي</span></div>
+      </div>
+    </div>
+
+    <div style="background-color: #f8fafc; border: 1px solid #cbd5e1; border-radius: 10px; padding: 12px; margin-bottom: 16px;">
+      <h3 style="font-size: 12px; font-weight: bold; color: #1e293b; margin: 0 0 8px 0; border-bottom: 1px solid #e2e8f0; padding-bottom: 4px;">
+        ملخص المؤشرات الإنتاجية والتشغيلية (KPIs)
+      </h3>
+      <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; text-align: center;">
+        <div style="background: white; padding: 8px; border-radius: 6px; border: 1px solid #e2e8f0;">
+          <div style="font-size: 10px; color: #64748b;">إجمالي المرضى</div>
+          <div style="font-size: 16px; font-weight: bold; color: #0f766e;" id="pdfTotalPatients">0</div>
+        </div>
+        <div style="background: white; padding: 8px; border-radius: 6px; border: 1px solid #e2e8f0;">
+          <div style="font-size: 10px; color: #64748b;">مرضى جدد</div>
+          <div style="font-size: 16px; font-weight: bold; color: #059669;" id="pdfNewPatients">0</div>
+        </div>
+        <div style="background: white; padding: 8px; border-radius: 6px; border: 1px solid #e2e8f0;">
+          <div style="font-size: 10px; color: #64748b;">جلسات مراجعة</div>
+          <div style="font-size: 16px; font-weight: bold; color: #d97706;" id="pdfFollowupPatients">0</div>
+        </div>
+        <div style="background: white; padding: 8px; border-radius: 6px; border: 1px solid #e2e8f0;">
+          <div style="font-size: 10px; color: #64748b;">نسبة الإشغال</div>
+          <div style="font-size: 16px; font-weight: bold; color: #0284c7;" id="pdfUtilization">0%</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-bottom: 16px;">
+      <h3 style="font-size: 11px; font-weight: bold; color: #1e293b; margin: 0 0 6px 0;">توزيع الإجراءات والخدمات الطبية:</h3>
+      <table style="width: 100%; border-collapse: collapse; font-size: 10px; text-align: right;">
+        <thead>
+          <tr style="background-color: #f1f5f9; border-bottom: 1px solid #cbd5e1;">
+            <th style="padding: 5px 8px;">الخدمة الطبية</th>
+            <th style="padding: 5px 8px; text-align: center;">عدد الحالات</th>
+            <th style="padding: 5px 8px; text-align: center;">النسبة</th>
+          </tr>
+        </thead>
+        <tbody id="pdfServicesTableBody"></tbody>
+      </table>
+    </div>
+
+    <div>
+      <h3 style="font-size: 11px; font-weight: bold; color: #1e293b; margin: 0 0 6px 0;">سجل الحالات والمواعيد:</h3>
+      <table style="width: 100%; border-collapse: collapse; font-size: 9px; text-align: right;">
+        <thead>
+          <tr style="background-color: #f1f5f9; border-bottom: 1px solid #cbd5e1;">
+            <th style="padding: 5px 6px;">التاريخ</th>
+            <th style="padding: 5px 6px;">اسم المريض</th>
+            <th style="padding: 5px 6px;">الهاتف</th>
+            <th style="padding: 5px 6px;">النوع</th>
+            <th style="padding: 5px 6px;">الخدمة</th>
+            <th style="padding: 5px 6px; text-align: center;">المقاعد</th>
+            <th style="padding: 5px 6px;">الموعد</th>
+          </tr>
+        </thead>
+        <tbody id="pdfPatientsTableBody"></tbody>
+      </table>
+    </div>
+
+    <div style="margin-top: 30px; padding-top: 12px; border-top: 1px dashed #94a3b8; display: flex; justify-content: space-between; align-items: flex-end; font-size: 10px; color: #475569;">
+      <div>
+        <p style="margin: 0; font-weight: bold;">مستخرج آلياً من نظام إدارة عيادة الأسنان السحابي.</p>
+        <p style="margin: 2px 0 0 0; color: #94a3b8;">توقيع واستلام الطبيب/ة: ______________________</p>
+      </div>
+      <div style="text-align: center; border: 1.5px dashed #94a3b8; padding: 14px 28px; border-radius: 8px; color: #94a3b8; font-weight: bold;">
+        ختم العيادة الرسمي
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- MODAL: DOCTOR FIREBASE AUTHENTICATION (تسجيل الدخول وإنشاء الحساب) -->
+  <!-- ========================================================================= -->
+  <div id="doctorAuthModal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 no-print">
+    <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-slate-100 space-y-4">
+      
+      <div class="text-center space-y-1">
+        <div class="w-12 h-12 rounded-2xl bg-clinic-100 text-clinic-700 flex items-center justify-center mx-auto text-xl font-black mb-2">
+          👨‍⚕️
+        </div>
+        <h3 class="text-base font-bold text-slate-900">بوابة دخول الطبيب/ة المسؤول</h3>
+        <p class="text-xs text-slate-500">سجّل دخولك بالبريد الإلكتروني للوصول إلى لوحة العيادة.</p>
+      </div>
+
+      <!-- Tabs: Sign In / Register -->
+      <div class="flex bg-slate-100 p-1 rounded-xl text-xs font-bold">
+        <button id="authTabLogin" onclick="switchAuthTab('login')" class="flex-1 py-2 rounded-lg bg-white text-clinic-700 shadow-sm transition-all">
+          تسجيل الدخول
+        </button>
+        <button id="authTabRegister" onclick="switchAuthTab('register')" class="flex-1 py-2 rounded-lg text-slate-600 hover:text-slate-900 transition-all">
+          حساب جديد
+        </button>
+      </div>
+
+      <!-- Auth Form -->
+      <form id="doctorAuthForm" onsubmit="handleDoctorAuthSubmit(event)" class="space-y-3 text-xs">
+        <div>
+          <label class="block font-bold text-slate-700 mb-1" for="doctorAuthEmail">البريد الإلكتروني (Email)</label>
+          <input type="email" id="doctorAuthEmail" required placeholder="doctor@example.com" dir="ltr"
+            class="w-full px-3 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-clinic-500 font-semibold text-slate-800">
+        </div>
+
+        <div>
+          <label class="block font-bold text-slate-700 mb-1" for="doctorAuthPassword">كلمة المرور (Password)</label>
+          <input type="password" id="doctorAuthPassword" required minlength="6" placeholder="••••••••" dir="ltr"
+            class="w-full px-3 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-clinic-500 font-semibold text-slate-800">
+        </div>
+
+        <div id="authErrorMessage" class="hidden p-2.5 rounded-xl bg-rose-50 text-rose-700 text-[11px] font-bold border border-rose-200">
+          خطأ في المصادقة
+        </div>
+
+        <div class="pt-1 flex gap-2">
+          <button type="submit" id="authSubmitBtn"
+            class="flex-1 py-2.5 bg-clinic-600 hover:bg-clinic-700 text-white font-bold rounded-xl transition-all shadow-md">
+            دخول للعيادة
+          </button>
+          <button type="button" onclick="closeDoctorAuthModal()" class="px-3.5 py-2.5 bg-slate-100 text-slate-600 font-bold rounded-xl hover:bg-slate-200">
+            إلغاء
+          </button>
+        </div>
+      </form>
+
+      <div class="pt-2 border-t border-slate-100 text-center">
+        <button type="button" onclick="quickFillDoctorDemo()" class="text-[10px] text-clinic-600 hover:underline font-bold">
+          ⚡ تجربة تعبئة سريعة
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- MODAL: CLINIC SETTINGS (إعدادات الطبيب مع خيار إخفاء/إظهار المقاعد) -->
+  <!-- ========================================================================= -->
+  <div id="clinicSettingsModal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 no-print">
+    <div class="bg-white rounded-3xl max-w-lg w-full p-5 sm:p-6 shadow-2xl border border-slate-100 space-y-4 max-h-[92vh] overflow-y-auto custom-scrollbar">
+      
+      <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+        <h3 class="text-sm sm:text-base font-bold text-slate-900 flex items-center gap-1.5">
+          <span>⚙️</span> إعدادات العيادة والطبيب/ة
+        </h3>
+        <button onclick="closeClinicSettingsModal()" class="text-slate-400 hover:text-slate-600 font-bold p-1">✕</button>
+      </div>
+
+      <form id="clinicSettingsForm" onsubmit="saveClinicSettings(event)" class="space-y-3.5 text-xs">
+        
+        <!-- Doctor Title and Name -->
+        <div class="grid grid-cols-3 gap-2">
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">اللقب</label>
+            <select id="settingDoctorGender" class="w-full px-2.5 py-2 rounded-xl border border-slate-300 font-bold">
+              <option value="د.">د. (طبيب)</option>
+              <option value="دكتورة">دكتورة (طبيبة)</option>
+            </select>
+          </div>
+          <div class="col-span-2">
+            <label class="block font-bold text-slate-700 mb-1">اسم الطبيب/ة الكامل *</label>
+            <input type="text" id="settingDoctorName" required placeholder="مثال: أيهم الحلبي"
+              class="w-full px-3 py-2 rounded-xl border border-slate-300 font-bold">
+          </div>
+        </div>
+
+        <!-- Specialty -->
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">تخصص العيادة</label>
+          <input type="text" id="settingSpecialty" required placeholder="مثال: جراحة وزراعة وتجميل الأسنان"
+            class="w-full px-3 py-2 rounded-xl border border-slate-300">
+        </div>
+
+        <!-- Hours -->
+        <div class="grid grid-cols-2 gap-2.5">
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">ساعة بدء الدوام</label>
+            <input type="time" id="settingStartHour" required value="12:00"
+              class="w-full px-3 py-2 rounded-xl border border-slate-300 font-bold">
+          </div>
+
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">ساعة انتهاء الدوام</label>
+            <input type="time" id="settingEndHour" required value="18:00"
+              class="w-full px-3 py-2 rounded-xl border border-slate-300 font-bold">
+          </div>
+        </div>
+
+        <!-- Work Days -->
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">أيام العمل الأسبوعية المعتمدة:</label>
+          <div class="grid grid-cols-4 sm:grid-cols-7 gap-1 text-center">
+            <label class="cursor-pointer">
+              <input type="checkbox" name="workDaySetting" value="sat" checked class="peer sr-only">
+              <div class="py-1.5 rounded-lg border border-slate-200 peer-checked:bg-clinic-600 peer-checked:text-white font-bold text-[10px]">السبت</div>
+            </label>
+            <label class="cursor-pointer">
+              <input type="checkbox" name="workDaySetting" value="sun" checked class="peer sr-only">
+              <div class="py-1.5 rounded-lg border border-slate-200 peer-checked:bg-clinic-600 peer-checked:text-white font-bold text-[10px]">الأحد</div>
+            </label>
+            <label class="cursor-pointer">
+              <input type="checkbox" name="workDaySetting" value="mon" checked class="peer sr-only">
+              <div class="py-1.5 rounded-lg border border-slate-200 peer-checked:bg-clinic-600 peer-checked:text-white font-bold text-[10px]">الإثنين</div>
+            </label>
+            <label class="cursor-pointer">
+              <input type="checkbox" name="workDaySetting" value="tue" checked class="peer sr-only">
+              <div class="py-1.5 rounded-lg border border-slate-200 peer-checked:bg-clinic-600 peer-checked:text-white font-bold text-[10px]">الثلاثاء</div>
+            </label>
+            <label class="cursor-pointer">
+              <input type="checkbox" name="workDaySetting" value="wed" checked class="peer sr-only">
+              <div class="py-1.5 rounded-lg border border-slate-200 peer-checked:bg-clinic-600 peer-checked:text-white font-bold text-[10px]">الأربعاء</div>
+            </label>
+            <label class="cursor-pointer">
+              <input type="checkbox" name="workDaySetting" value="thu" checked class="peer sr-only">
+              <div class="py-1.5 rounded-lg border border-slate-200 peer-checked:bg-clinic-600 peer-checked:text-white font-bold text-[10px]">الخميس</div>
+            </label>
+            <label class="cursor-pointer">
+              <input type="checkbox" name="workDaySetting" value="fri" class="peer sr-only">
+              <div class="py-1.5 rounded-lg border border-slate-200 peer-checked:bg-clinic-600 peer-checked:text-white font-bold text-[10px]">الجمعة</div>
+            </label>
+          </div>
+        </div>
+
+        <!-- Capacity & Slot Duration -->
+        <div class="grid grid-cols-2 gap-2.5">
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">الحد الأقصى للمرضى يومياً</label>
+            <input type="number" id="settingMaxCapacity" min="1" max="80" value="15" required
+              class="w-full px-3 py-2 rounded-xl border border-slate-300 font-bold">
+          </div>
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">مدة الموعد (دقيقة)</label>
+            <select id="settingSlotDuration" class="w-full px-3 py-2 rounded-xl border border-slate-300 font-bold">
+              <option value="30">30 دقيقة</option>
+              <option value="45" selected>45 دقيقة</option>
+              <option value="60">60 دقيقة</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- NEW FEATURE: Hide / Show remaining seats from patients -->
+        <div class="p-3 bg-teal-50/60 rounded-xl border border-teal-100 flex items-center justify-between">
+          <div>
+            <div class="font-bold text-slate-800 text-xs">إظهار المقاعد المتبقية للمرضى</div>
+            <div class="text-[10px] text-slate-500">إذا عطلت الخيار، سيظهر للمريض "الحجز متاح" دون كشف الأرقام والعدد المتبقي.</div>
+          </div>
+          <label class="relative inline-flex items-center cursor-pointer flex-shrink-0">
+            <input type="checkbox" id="settingShowRemainingSeats" checked class="sr-only peer">
+            <div class="w-11 h-6 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-clinic-600"></div>
+          </label>
+        </div>
+
+        <!-- Address & Phone -->
+        <div class="grid grid-cols-2 gap-2.5">
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">عنوان العيادة</label>
+            <input type="text" id="settingAddress" required placeholder="مثال: حلب - شارع فيصل"
+              class="w-full px-3 py-2 rounded-xl border border-slate-300">
+          </div>
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">هاتف العيادة</label>
+            <input type="tel" id="settingPhone" required placeholder="09XXXXXXXX" dir="ltr"
+              class="w-full px-3 py-2 rounded-xl border border-slate-300 text-right">
+          </div>
+        </div>
+
+        <div class="pt-2 border-t border-slate-100 flex gap-2">
+          <button type="submit" class="flex-1 py-2.5 bg-clinic-600 hover:bg-clinic-700 text-white rounded-xl font-bold shadow-md transition-all">
+            حفظ وتحديث جميع الأجهزة فوراً
+          </button>
+          <button type="button" onclick="closeClinicSettingsModal()" class="px-4 py-2.5 bg-slate-100 text-slate-600 rounded-xl font-bold hover:bg-slate-200">
+            إلغاء
+          </button>
+        </div>
+
+      </form>
+
+    </div>
+  </div>
+
+  <!-- MODAL: BOOKING SUCCESS SLIP -->
+  <div id="successModal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 no-print">
+    <div class="bg-white rounded-3xl max-w-sm w-full p-5 sm:p-6 shadow-2xl border border-slate-100 text-center space-y-3">
+      <div class="w-14 h-14 rounded-2xl bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto text-2xl shadow-inner">
+        ✓
+      </div>
+
+      <div>
+        <span class="inline-block px-3 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 mb-1">
+          تم تأكيد الحجز بنجاح
+        </span>
+        <h3 class="text-base font-bold text-slate-900" id="receiptDoctorName">عيادة طب الأسنان</h3>
+        <p class="text-[11px] text-slate-500">تم تسجيل موعدك في جدول العيادة مباشرة.</p>
+      </div>
+
+      <div class="bg-slate-50 rounded-2xl p-3.5 border border-dashed border-slate-300 text-right space-y-1.5 text-xs">
+        <div class="flex justify-between border-b border-slate-200 pb-1.5">
+          <span class="text-slate-500">اسم المريض:</span>
+          <span id="receiptPatientName" class="font-bold text-slate-800">-</span>
+        </div>
+        <div class="flex justify-between border-b border-slate-200 pb-1.5">
+          <span class="text-slate-500">النوع:</span>
+          <span id="receiptType" class="font-bold text-clinic-700">-</span>
+        </div>
+        <div class="flex justify-between border-b border-slate-200 pb-1.5">
+          <span class="text-slate-500">الخدمة:</span>
+          <span id="receiptService" class="font-bold text-slate-800">-</span>
+        </div>
+        <div class="flex justify-between border-b border-slate-200 pb-1.5">
+          <span class="text-slate-500">المقاعد:</span>
+          <span id="receiptParty" class="font-bold text-slate-800">-</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-slate-500">الموعد المحدد:</span>
+          <span id="receiptTime" class="font-bold text-emerald-600">-</span>
+        </div>
+      </div>
+
+      <button onclick="closeSuccessModal()" class="w-full py-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs transition-all">
+        حسناً، إغلاق الإشعار
+      </button>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="customToast" class="fixed bottom-4 left-4 right-4 sm:right-auto sm:max-w-xs z-50 hidden transition-all duration-300 no-print">
+    <div id="toastBox" class="p-3.5 rounded-2xl shadow-xl border flex items-center justify-between gap-2 text-xs font-bold text-white bg-slate-900">
+      <span id="toastMessage">تنبيه</span>
+      <button onclick="hideToast()" class="text-slate-400 hover:text-white font-bold text-sm">✕</button>
+    </div>
+  </div>
+
+  <!-- Discreet Footer -->
+  <footer class="py-3 border-t border-slate-200 text-center text-[10px] text-slate-400 bg-white no-print">
+    <div class="max-w-4xl mx-auto px-4 flex items-center justify-between">
+      <span>© 2026 نظام حجز عيادة الأسنان المتزامن سحابياً</span>
+      <button onclick="openDoctorAuthModal()" class="text-slate-400 hover:text-slate-600 font-medium">
+        بوابة الطبيب 🔒
+      </button>
+    </div>
+  </footer>
+
+  <script>
+    // =========================================================================
+    // 1. FIREBASE CONFIGURATION & INITIALIZATION (تم ربط مفاتيح مشروعك هنا)
+    // =========================================================================
+    const firebaseConfig = {
+      apiKey: "AIzaSyAcceOtq7hfFIZtiGswX1pnlelrDF5sDlE",
+      authDomain: "doctor-78f2e.firebaseapp.com",
+      projectId: "doctor-78f2e",
+      storageBucket: "doctor-78f2e.firebasestorage.app",
+      messagingSenderId: "809845736597",
+      appId: "1:809845736597:web:791802ca5750b55ebec79c",
+      measurementId: "G-W9VHT0XSFG"
+    };
+
+    let isFirebaseReady = false;
+    let auth = null;
+    let db = null;
+    let unsubscribeAppointments = null;
+    let unsubscribeSettings = null;
+
+    function initFirebaseService() {
+      const statusDot = document.getElementById('firebaseStatusDot');
+      const statusText = document.getElementById('firebaseStatusText');
+      const modeBadge = document.getElementById('cloudModeBadge');
+
+      if (firebaseConfig.apiKey && firebaseConfig.projectId) {
+        try {
+          if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+          }
+          auth = firebase.auth();
+          db = firebase.firestore();
+          isFirebaseReady = true;
+
+          statusDot.className = 'w-2 h-2 rounded-full bg-emerald-500';
+          statusText.textContent = 'متصل سحابياً بقاعدة بيانات Firestore لحظياً';
+          modeBadge.textContent = 'Firebase Live';
+          modeBadge.className = 'text-[9px] bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded shadow-sm border border-emerald-200 font-mono';
+
+          // 1. الاستماع الحي لإعدادات العيادة وساعات الدوام
+          listenToClinicSettingsRealtime();
+
+          // 2. مراقبة حالة تسجيل دخول الطبيب
+          auth.onAuthStateChanged((user) => {
+            if (user) {
+              isDoctorAuthenticated = true;
+              currentDoctorUser = user;
+              document.getElementById('doctorLoggedInEmail').textContent = user.email;
+              updateDoctorAuthUI();
+              startRealtimeAppointmentsListener();
+            } else {
+              isDoctorAuthenticated = false;
+              currentDoctorUser = null;
+              if (unsubscribeAppointments) unsubscribeAppointments();
+              updateDoctorAuthUI();
+              showPatientView();
+            }
+          });
+
+          return;
+        } catch (e) {
+          console.error("Firebase init failed:", e);
+        }
+      }
+
+      // وضع تجريبي محلي في حال تعذر الاتصال
+      statusDot.className = 'w-2 h-2 rounded-full bg-sky-500';
+      statusText.textContent = 'الوضع المحلي التجريبي';
+      modeBadge.textContent = 'Local Mode';
+      loadSavedLocalState();
+    }
+
+    // =========================================================================
+    // 2. STATE & DEFAULT CONFIG
+    // =========================================================================
+    const DAY_NAMES = {
+      sat: 'السبت',
+      sun: 'الأحد',
+      mon: 'الإثنين',
+      tue: 'الثلاثاء',
+      wed: 'الأربعاء',
+      thu: 'الخميس',
+      fri: 'الجمعة'
+    };
+
+    let clinicConfig = {
+      doctorGender: 'د.',
+      doctorName: 'أيهم الحلبي',
+      specialty: 'جراحة وزراعة وتجميل الأسنان',
+      phone: '0991234567',
+      address: 'حلب - شارع فيصل',
+      workDays: ['sat', 'sun', 'mon', 'tue', 'wed', 'thu'],
+      startHour: '12:00',
+      endHour: '18:00',
+      slotDuration: 45,
+      maxDailyCapacity: 15,
+      showRemainingSeatsToPatients: true,
+      isEmergencyClosed: false
+    };
+
+    let appointments = [];
+    let currentFilter = 'all';
+    let soundEnabled = true;
+    let analyticsTimeframe = 'week';
+    let isDoctorAuthenticated = false;
+    let currentDoctorUser = null;
+    let authMode = 'login';
+    let hasLoadedInitialAppointments = false;
+
+    function loadSavedLocalState() {
+      const savedConfig = localStorage.getItem('dental_clinic_config');
+      if (savedConfig) {
+        try { clinicConfig = { ...clinicConfig, ...JSON.parse(savedConfig) }; } catch (e) {}
+      }
+      const savedAppointments = localStorage.getItem('dental_clinic_appointments');
+      if (savedAppointments) {
+        try { appointments = JSON.parse(savedAppointments); } catch (e) {}
+      }
+      syncClinicUI();
+      renderAppointmentsTable();
+      renderAnalytics();
+    }
+
+    function saveStateToLocal() {
+      localStorage.setItem('dental_clinic_config', JSON.stringify(clinicConfig));
+      localStorage.setItem('dental_clinic_appointments', JSON.stringify(appointments));
+    }
+
+    // =========================================================================
+    // 3. REALTIME SYNC (SETTINGS & APPOINTMENTS)
+    // =========================================================================
+    function listenToClinicSettingsRealtime() {
+      if (!isFirebaseReady || !db) return;
+
+      unsubscribeSettings = db.collection('clinic_settings').doc('config')
+        .onSnapshot((doc) => {
+          if (doc.exists) {
+            clinicConfig = { ...clinicConfig, ...doc.data() };
+            syncClinicUI();
+          } else {
+            // حفظ الإعدادات الافتراضية إذا كان الطبيب مسجلاً دخوله
+            if (isDoctorAuthenticated) {
+              db.collection('clinic_settings').doc('config').set(clinicConfig).catch(err => console.warn(err));
+            }
+          }
+        }, (err) => console.error("Settings listener err:", err));
+    }
+
+    function startRealtimeAppointmentsListener() {
+      if (!isFirebaseReady || !db) return;
+
+      const today = new Date().toISOString().split('T')[0];
+      
+      // استعلام بدون composite index لتجنب أي أخطاء في الكونسول
+      unsubscribeAppointments = db.collection('appointments')
+        .where('date', '==', today)
+        .onSnapshot((snapshot) => {
+          
+          snapshot.docChanges().forEach((change) => {
+            if (change.type === 'added') {
+              const newApt = { id: change.doc.id, ...change.doc.data() };
+              if (hasLoadedInitialAppointments) {
+                triggerDoctorIncomingAlert(newApt);
+              }
+            }
+          });
+
+          // ترتيب السجلات محلياً بحسب تاريخ الإنشاء الأحدث
+          appointments = snapshot.docs
+            .map(doc => ({ id: doc.id, ...doc.data() }))
+            .sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+
+          hasLoadedInitialAppointments = true;
+          
+          updateCapacityUI();
+          renderAppointmentsTable();
+          renderAnalytics();
+        }, (error) => {
+          console.error("Firestore listen error:", error);
+        });
+    }
+
+    function saveClinicConfigToCloud() {
+      if (!isFirebaseReady || !db) {
+        saveStateToLocal();
+        return;
+      }
+      db.collection('clinic_settings').doc('config').set(clinicConfig, { merge: true })
+        .then(() => showToast('تم حفظ وتحديث إعدادات العيادة سحابياً!', 'success'))
+        .catch(err => showToast(err.message, 'error'));
+    }
+
+    // =========================================================================
+    // 4. NOTIFICATIONS (AUDIO CHIME + DESKTOP/MOBILE PUSH)
+    // =========================================================================
+    function playDoctorChimeSound() {
+      if (!soundEnabled) return;
+      try {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContext) return;
+        const ctx = new AudioContext();
+        const now = ctx.currentTime;
+        
+        // النغمة الأولى
+        const osc1 = ctx.createOscillator();
+        const gain1 = ctx.createGain();
+        osc1.type = 'sine';
+        osc1.frequency.setValueAtTime(659.25, now);
+        osc1.frequency.exponentialRampToValueAtTime(880, now + 0.15);
+        gain1.gain.setValueAtTime(0.35, now);
+        gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.8);
+        osc1.connect(gain1);
+        gain1.connect(ctx.destination);
+        osc1.start(now);
+        osc1.stop(now + 0.8);
+
+        // النغمة الثانية
+        const osc2 = ctx.createOscillator();
+        const gain2 = ctx.createGain();
+        osc2.type = 'triangle';
+        osc2.frequency.setValueAtTime(1318.51, now + 0.12);
+        gain2.gain.setValueAtTime(0.3, now + 0.12);
+        gain2.gain.exponentialRampToValueAtTime(0.001, now + 1.1);
+        osc2.connect(gain2);
+        gain2.connect(ctx.destination);
+        osc2.start(now + 0.12);
+        osc2.stop(now + 1.1);
+      } catch (e) {
+        console.warn('Audio context needs interaction:', e);
+      }
+    }
+
+    function requestSystemNotificationPermission() {
+      if (!("Notification" in window)) {
+        showToast('متصفحك لا يدعم إشعارات النظام.', 'warning');
+        return;
+      }
+      Notification.requestPermission().then((permission) => {
+        if (permission === 'granted') {
+          showToast('تم تفعيل إشعارات النظام بنجاح! ستصلك تنبيهات فورية عند أي حجز.', 'success');
+          document.getElementById('systemNotifIcon').textContent = '✅';
+          new Notification('عيادة الأسنان', {
+            body: 'إشعارات النظام مفعّلة الآن وتصلك فور حجز أي مريض.',
+            icon: 'https://cdn-icons-png.flaticon.com/512/2966/2966327.png'
+          });
+        } else {
+          showToast('تم رفض إذن الإشعارات.', 'warning');
+        }
+      });
+    }
+
+    function triggerDoctorIncomingAlert(appointment) {
+      playDoctorChimeSound();
+
+      if ("Notification" in window && Notification.permission === "granted") {
+        const typeLabel = appointment.type === 'new' ? 'مريض جديد' : 'مراجعة ومتابعة';
+        new Notification(`🦷 حجز جديد: ${appointment.name}`, {
+          body: `الخدمة: ${appointment.service}\nالموعد: ${appointment.timeSlot} | الهاتف: ${appointment.phone}`,
+          icon: 'https://cdn-icons-png.flaticon.com/512/2966/2966327.png',
+          tag: appointment.id
+        });
+      }
+
+      const banner = document.getElementById('doctorIncomingNotification');
+      const text = document.getElementById('latestNotificationText');
+      if (banner && text) {
+        const typeLabel = appointment.type === 'new' ? 'مريض جديد' : 'مراجعة';
+        text.textContent = `[${appointment.timeSlot}] ${appointment.name} (${typeLabel} - ${appointment.service})`;
+        banner.classList.remove('hidden');
+      }
+      const badge = document.getElementById('navNotificationBadge');
+      if (badge) {
+        badge.textContent = parseInt(badge.textContent || '0') + 1;
+        badge.classList.remove('hidden');
+      }
+    }
+
+    // =========================================================================
+    // 5. TIME SLOTS & UI HELPERS
+    // =========================================================================
+    function generateTimeSlots(startHourStr, endHourStr, intervalMinutes = 45) {
+      const slots = [];
+      const [startH] = (startHourStr || '12:00').split(':').map(Number);
+      const [endH] = (endHourStr || '18:00').split(':').map(Number);
+
+      let current = startH * 60;
+      const end = endH * 60;
+
+      while (current < end) {
+        const h = Math.floor(current / 60);
+        const m = current % 60;
+        const period = h >= 12 ? 'بعد الظهر' : 'صباحاً';
+        const displayH = h > 12 ? h - 12 : (h === 0 ? 12 : h);
+        const formatted = `${String(displayH).padStart(2, '0')}:${String(m).padStart(2, '0')} ${period}`;
+        slots.push(formatted);
+        current += intervalMinutes;
+      }
+      return slots;
+    }
+
+    function populateTimeSlots() {
+      const select = document.getElementById('timeSlotSelect');
+      if (!select) return;
+      const slots = generateTimeSlots(clinicConfig.startHour, clinicConfig.endHour, clinicConfig.slotDuration);
+      select.innerHTML = slots.map(slot => `<option value="${slot}">${slot}</option>`).join('');
+    }
+
+    function formatDays(daysList) {
+      if (!daysList || daysList.length === 0) return 'جميع أيام الأسبوع';
+      return daysList.map(d => DAY_NAMES[d] || d).join('، ');
+    }
+
+    function syncClinicUI() {
+      const fullDoctorTitle = `${clinicConfig.doctorGender} ${clinicConfig.doctorName}`;
+      const clinicTitle = `عيادة ${fullDoctorTitle}`;
+      const daysText = formatDays(clinicConfig.workDays);
+      const hoursText = `${clinicConfig.startHour} إلى ${clinicConfig.endHour}`;
+
+      document.getElementById('navClinicTitle').textContent = clinicTitle;
+      document.getElementById('navDoctorGenderBadge').textContent = clinicConfig.doctorGender === 'دكتورة' ? 'طبيبة معتمدة' : 'طبيب معتمد';
+      document.getElementById('navWorkingHoursSummary').innerHTML = `<span class="inline-block w-1.5 h-1.5 rounded-full bg-emerald-500"></span> ${daysText} (${hoursText})`;
+
+      document.getElementById('bannerDoctorName').textContent = clinicTitle;
+      document.getElementById('bannerDays').textContent = daysText;
+      document.getElementById('bannerStartTime').textContent = clinicConfig.startHour;
+      document.getElementById('bannerEndTime').textContent = clinicConfig.endHour;
+
+      document.getElementById('cardAddress').textContent = clinicConfig.address;
+      document.getElementById('cardWorkDays').textContent = daysText;
+      document.getElementById('cardWorkHours').textContent = `${clinicConfig.startHour} - ${clinicConfig.endHour}`;
+      document.getElementById('cardPhone').textContent = clinicConfig.phone;
+
+      document.getElementById('doctorDashboardTitle').textContent = `لوحة تحكم: ${fullDoctorTitle}`;
+      document.getElementById('receiptDoctorName').textContent = clinicTitle;
+
+      document.getElementById('pdfDoctorName').textContent = clinicTitle;
+      document.getElementById('pdfSpecialty').textContent = clinicConfig.specialty;
+      document.getElementById('pdfClinicInfo').textContent = `المقر: ${clinicConfig.address} | هاتف: ${clinicConfig.phone}`;
+
+      const seatsContainer = document.getElementById('seatsCounterContainer');
+      if (seatsContainer) {
+        if (clinicConfig.showRemainingSeatsToPatients === false && !isDoctorAuthenticated) {
+          seatsContainer.classList.add('hidden');
+        } else {
+          seatsContainer.classList.remove('hidden');
+        }
+      }
+
+      populateTimeSlots();
+      updateCapacityUI();
+      updateLockBtnUI();
+      updateDoctorAuthUI();
+    }
+
+    function getTodayAppointments() {
+      const today = new Date().toISOString().split('T')[0];
+      return appointments.filter(a => a.date === today);
+    }
+
+    function getTotalBookedCountToday() {
+      return getTodayAppointments().reduce((sum, item) => sum + Number(item.partySize || 1), 0);
+    }
+
+    function getRemainingSeats() {
+      const remaining = clinicConfig.maxDailyCapacity - getTotalBookedCountToday();
+      return remaining > 0 ? remaining : 0;
+    }
+
+    function isBookingOpen() {
+      if (clinicConfig.isEmergencyClosed) return false;
+      return getRemainingSeats() > 0;
+    }
+
+    function updateCapacityUI() {
+      const bookedCount = getTotalBookedCountToday();
+      const remaining = getRemainingSeats();
+      const maxCap = clinicConfig.maxDailyCapacity;
+      const percent = Math.min(100, Math.round((bookedCount / maxCap) * 100));
+
+      document.getElementById('remainingSeatsBadge').textContent = remaining;
+      document.getElementById('maxCapacityDisplay').textContent = maxCap;
+      document.getElementById('capacityProgressBar').style.width = `${Math.max(5, 100 - percent)}%`;
+
+      const pill = document.getElementById('bookingStatusPill');
+      const submitBtn = document.getElementById('submitBookingBtn');
+
+      if (clinicConfig.isEmergencyClosed) {
+        pill.className = 'inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-rose-500/20 text-rose-300 border border-rose-500/40';
+        pill.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-rose-400"></span> الحجز مغلق حالياً';
+        submitBtn.disabled = true;
+        submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
+      } else if (remaining <= 0) {
+        pill.className = 'inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-rose-500/20 text-rose-300 border border-rose-500/40';
+        pill.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-rose-400"></span> اكتمل حجز اليوم بالكامل';
+        submitBtn.disabled = true;
+        submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
+      } else {
+        pill.className = 'inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40';
+        pill.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> الحجز متاح الآن';
+        submitBtn.disabled = false;
+        submitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+      }
+
+      const todayList = getTodayAppointments();
+      document.getElementById('metricTotalPatients').textContent = bookedCount;
+      document.getElementById('metricSeatsLeft').textContent = remaining;
+      document.getElementById('metricNewPatients').textContent = todayList.filter(a => a.type === 'new').reduce((s, a) => s + Number(a.partySize || 1), 0);
+      document.getElementById('metricFollowupPatients').textContent = todayList.filter(a => a.type === 'followup').reduce((s, a) => s + Number(a.partySize || 1), 0);
+    }
+
+    // =========================================================================
+    // 6. PATIENT FORM BOOKING
+    // =========================================================================
+    function handlePatientBooking(event) {
+      event.preventDefault();
+
+      const remaining = getRemainingSeats();
+      if (!isBookingOpen()) {
+        showToast('الحجز مغلق حالياً لهذه العيادة.', 'error');
+        return;
+      }
+
+      const partySize = parseInt(document.getElementById('partySizeSelect').value) || 1;
+      if (partySize > remaining) {
+        showToast(`متبقي فقط ${remaining} مقاعد لليوم، يرجى تقليل العدد.`, 'warning');
+        return;
+      }
+
+      const patientName = document.getElementById('patientName').value.trim();
+      const patientPhone = document.getElementById('patientPhone').value.trim();
+      const patientType = document.querySelector('input[name="patientType"]:checked').value;
+      const service = document.getElementById('selectedServiceInput').value;
+      const timeSlot = document.getElementById('timeSlotSelect').value;
+      const notes = document.getElementById('patientNotes').value.trim();
+      const today = new Date().toISOString().split('T')[0];
+
+      if (patientPhone.length < 7) {
+        showToast('يرجى كتابة رقم هاتف صحيح للتأكيد.', 'warning');
+        return;
+      }
+
+      const newRecord = {
+        name: patientName,
+        phone: patientPhone,
+        type: patientType,
+        service: service,
+        partySize: partySize,
+        timeSlot: timeSlot,
+        notes: notes || 'لا توجد ملاحظات',
+        status: 'مؤكد',
+        date: today,
+        createdAt: Date.now()
+      };
+
+      if (isFirebaseReady && db) {
+        db.collection('appointments').add(newRecord).then((docRef) => {
+          newRecord.id = docRef.id;
+          showReceiptModal(newRecord);
+          showToast(`تم تأكيد موعدك ومزامنته سحابياً في عيادة الطبيب!`, 'success');
+        }).catch((error) => {
+          showToast('حدث خطأ أثناء الحفظ السحابي: ' + error.message, 'error');
+        });
+      } else {
+        newRecord.id = 'DENT-' + (100 + appointments.length + 1);
+        appointments.unshift(newRecord);
+        saveStateToLocal();
+        triggerDoctorIncomingAlert(newRecord);
+        updateCapacityUI();
+        renderAppointmentsTable();
+        renderAnalytics();
+        showReceiptModal(newRecord);
+        showToast(`تم تأكيد موعدك بنجاح!`, 'success');
+      }
+
+      document.getElementById('patientName').value = '';
+      document.getElementById('patientPhone').value = '';
+      document.getElementById('patientNotes').value = '';
+      document.getElementById('partySizeSelect').value = '1';
+    }
+
+    // =========================================================================
+    // 7. DOCTOR AUTHENTICATION FLOW
+    // =========================================================================
+    function openDoctorAuthModal() {
+      if (isDoctorAuthenticated) {
+        showDoctorDashboard();
+        return;
+      }
+      document.getElementById('doctorAuthEmail').value = '';
+      document.getElementById('doctorAuthPassword').value = '';
+      document.getElementById('authErrorMessage').classList.add('hidden');
+      document.getElementById('doctorAuthModal').classList.remove('hidden');
+      setTimeout(() => document.getElementById('doctorAuthEmail').focus(), 100);
+    }
+
+    function closeDoctorAuthModal() {
+      document.getElementById('doctorAuthModal').classList.add('hidden');
+    }
+
+    function switchAuthTab(mode) {
+      authMode = mode;
+      const loginTab = document.getElementById('authTabLogin');
+      const regTab = document.getElementById('authTabRegister');
+      const submitBtn = document.getElementById('authSubmitBtn');
+
+      if (mode === 'login') {
+        loginTab.className = 'flex-1 py-2 rounded-lg bg-white text-clinic-700 shadow-sm transition-all';
+        regTab.className = 'flex-1 py-2 rounded-lg text-slate-600 hover:text-slate-900 transition-all';
+        submitBtn.textContent = 'دخول للعيادة';
+      } else {
+        loginTab.className = 'flex-1 py-2 rounded-lg text-slate-600 hover:text-slate-900 transition-all';
+        regTab.className = 'flex-1 py-2 rounded-lg bg-white text-clinic-700 shadow-sm transition-all';
+        submitBtn.textContent = 'إنشاء حساب وتفعيل العيادة';
+      }
+    }
+
+    function handleDoctorAuthSubmit(event) {
+      event.preventDefault();
+      const email = document.getElementById('doctorAuthEmail').value.trim();
+      const password = document.getElementById('doctorAuthPassword').value;
+      const errorDiv = document.getElementById('authErrorMessage');
+      errorDiv.classList.add('hidden');
+
+      if (isFirebaseReady && auth) {
+        if (authMode === 'login') {
+          auth.signInWithEmailAndPassword(email, password)
+            .then(() => {
+              closeDoctorAuthModal();
+              showToast('مرحباً دكتور! تم تسجيل الدخول بنجاح.', 'success');
+            })
+            .catch((error) => {
+              errorDiv.textContent = 'خطأ بالدخول: ' + error.message;
+              errorDiv.classList.remove('hidden');
+            });
+        } else {
+          auth.createUserWithEmailAndPassword(email, password)
+            .then(() => {
+              closeDoctorAuthModal();
+              showToast('تم إنشاء حساب الطبيب بنجاح وتفعيل العيادة!', 'success');
+            })
+            .catch((error) => {
+              errorDiv.textContent = 'خطأ بالتسجيل: ' + error.message;
+              errorDiv.classList.remove('hidden');
+            });
+        }
+      }
+    }
+
+    function quickFillDoctorDemo() {
+      document.getElementById('doctorAuthEmail').value = 'doctor@dentalclinic.com';
+      document.getElementById('doctorAuthPassword').value = 'doctor123456';
+    }
+
+    function handleDoctorLogout() {
+      if (isFirebaseReady && auth) {
+        auth.signOut().then(() => {
+          showToast('تم تسجيل الخروج والعودة لواجهة المريض.', 'info');
+        });
+      }
+    }
+
+    function updateDoctorAuthUI() {
+      const triggerBtn = document.getElementById('doctorLoginTriggerBtn');
+      const authBar = document.getElementById('doctorAuthBar');
+      const navTabs = document.getElementById('doctorNavTabs');
+
+      if (isDoctorAuthenticated) {
+        triggerBtn.classList.add('hidden');
+        authBar.classList.remove('hidden');
+        navTabs.classList.remove('hidden');
+      } else {
+        triggerBtn.classList.remove('hidden');
+        authBar.classList.add('hidden');
+        navTabs.classList.add('hidden');
+      }
+    }
+
+    function showPatientView() {
+      document.getElementById('viewPatient').classList.remove('hidden');
+      document.getElementById('viewDoctorDashboard').classList.add('hidden');
+      document.getElementById('viewDoctorAnalytics').classList.add('hidden');
+      syncClinicUI();
+    }
+
+    function showDoctorDashboard() {
+      document.getElementById('viewPatient').classList.add('hidden');
+      document.getElementById('viewDoctorDashboard').classList.remove('hidden');
+      document.getElementById('viewDoctorAnalytics').classList.add('hidden');
+      
+      document.getElementById('tabDoctorLive').className = 'flex-1 py-1.5 px-3 rounded-lg text-xs font-bold transition-all bg-white text-clinic-700 shadow-sm border border-slate-200 text-center relative';
+      document.getElementById('tabDoctorAnalytics').className = 'flex-1 py-1.5 px-3 rounded-lg text-xs font-semibold transition-all text-slate-600 hover:text-slate-900 border border-transparent text-center';
+      
+      document.getElementById('navNotificationBadge').classList.add('hidden');
+      document.getElementById('navNotificationBadge').textContent = '0';
+      renderAppointmentsTable();
+      syncClinicUI();
+    }
+
+    function switchDoctorView(subView) {
+      if (!isDoctorAuthenticated) return;
+      if (subView === 'dashboard') {
+        showDoctorDashboard();
+      } else if (subView === 'analytics') {
+        document.getElementById('viewPatient').classList.add('hidden');
+        document.getElementById('viewDoctorDashboard').classList.add('hidden');
+        document.getElementById('viewDoctorAnalytics').classList.remove('hidden');
+
+        document.getElementById('tabDoctorLive').className = 'flex-1 py-1.5 px-3 rounded-lg text-xs font-semibold transition-all text-slate-600 hover:text-slate-900 border border-transparent text-center relative';
+        document.getElementById('tabDoctorAnalytics').className = 'flex-1 py-1.5 px-3 rounded-lg text-xs font-bold transition-all bg-white text-clinic-700 shadow-sm border border-slate-200 text-center';
+        renderAnalytics();
+      }
+    }
+
+    // =========================================================================
+    // 8. DOCTOR APPOINTMENTS TABLE & ACTIONS
+    // =========================================================================
+    function renderAppointmentsTable() {
+      const tbody = document.getElementById('appointmentsTableBody');
+      const mobileList = document.getElementById('appointmentsMobileList');
+      const emptyState = document.getElementById('emptyTableState');
+
+      let todayList = getTodayAppointments();
+      if (currentFilter === 'new') todayList = todayList.filter(a => a.type === 'new');
+      if (currentFilter === 'followup') todayList = todayList.filter(a => a.type === 'followup');
+
+      if (todayList.length === 0) {
+        if (tbody) tbody.innerHTML = '';
+        if (mobileList) mobileList.innerHTML = '';
+        if (emptyState) emptyState.classList.remove('hidden');
+        return;
+      }
+
+      if (emptyState) emptyState.classList.add('hidden');
+
+      if (tbody) {
+        tbody.innerHTML = todayList.map((apt, index) => {
+          const isNew = apt.type === 'new';
+          const typeBadge = isNew
+            ? '<span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-teal-50 text-teal-700 border border-teal-200">جديد</span>'
+            : '<span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200">مراجعة</span>';
+
+          return `
+            <tr class="hover:bg-slate-50">
+              <td class="py-2.5 px-3 font-mono text-[10px] text-slate-400">#${index + 1}</td>
+              <td class="py-2.5 px-3">
+                <div class="font-bold text-slate-900">${apt.name}</div>
+                <div class="text-[9px] text-slate-400">${apt.notes}</div>
+              </td>
+              <td class="py-2.5 px-3 text-slate-600 font-mono text-xs" dir="ltr">${apt.phone}</td>
+              <td class="py-2.5 px-3">${typeBadge}</td>
+              <td class="py-2.5 px-3 font-medium text-slate-800">${apt.service}</td>
+              <td class="py-2.5 px-3 text-center font-bold">${apt.partySize}</td>
+              <td class="py-2.5 px-3 font-bold text-clinic-700">${apt.timeSlot}</td>
+              <td class="py-2.5 px-3 text-center">
+                <button onclick="removeAppointment('${apt.id}')" class="text-rose-500 hover:text-rose-700 p-1 font-bold text-xs">
+                  إلغاء ✕
+                </button>
+              </td>
+            </tr>
+          `;
+        }).join('');
+      }
+
+      if (mobileList) {
+        mobileList.innerHTML = todayList.map((apt, index) => {
+          const isNew = apt.type === 'new';
+          const typeBadge = isNew
+            ? '<span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-teal-50 text-teal-700">مريض جديد</span>'
+            : '<span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-50 text-amber-700">مراجعة</span>';
+
+          return `
+            <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-1.5 text-xs">
+              <div class="flex items-start justify-between">
+                <div>
+                  <span class="font-bold text-slate-900 text-sm">${apt.name}</span>
+                  <span class="text-[10px] text-slate-400 block font-mono" dir="ltr">${apt.phone}</span>
+                </div>
+                ${typeBadge}
+              </div>
+
+              <div class="flex items-center justify-between text-[11px] text-slate-600">
+                <span>الخدمة: <strong>${apt.service}</strong></span>
+                <span class="font-bold text-clinic-700 bg-white px-2 py-0.5 rounded border border-slate-200">${apt.timeSlot}</span>
+              </div>
+
+              <div class="flex items-center justify-between pt-1 border-t border-slate-200 text-[10px]">
+                <span class="text-slate-500">عدد المقاعد: <strong>${apt.partySize}</strong></span>
+                <button onclick="removeAppointment('${apt.id}')" class="text-rose-600 font-bold hover:underline">
+                  إلغاء الموعد ✕
+                </button>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+    }
+
+    function removeAppointment(id) {
+      if (isFirebaseReady && db) {
+        db.collection('appointments').doc(id).delete()
+          .then(() => showToast('تم إلغاء الموعد وتفريغ المقعد سحابياً.', 'info'))
+          .catch(err => showToast(err.message, 'error'));
+      }
+    }
+
+    function toggleEmergencyLock() {
+      clinicConfig.isEmergencyClosed = !clinicConfig.isEmergencyClosed;
+      saveClinicConfigToCloud();
+      updateLockBtnUI();
+      updateCapacityUI();
+      showToast(clinicConfig.isEmergencyClosed ? 'تم إيقاف الحجز يدوياً.' : 'تمت إعادة فتح الحجز للمرضى.', clinicConfig.isEmergencyClosed ? 'error' : 'success');
+    }
+
+    function updateLockBtnUI() {
+      const btn = document.getElementById('toggleLockBtn');
+      const icon = document.getElementById('lockIcon');
+      const text = document.getElementById('lockText');
+      if (!btn) return;
+
+      if (clinicConfig.isEmergencyClosed) {
+        btn.className = 'flex-1 sm:flex-none px-3 py-2 rounded-xl text-xs font-bold border transition-all flex items-center justify-center gap-1.5 bg-emerald-50 border-emerald-200 text-emerald-700 shadow-sm';
+        icon.textContent = '🟢';
+        text.textContent = 'إعادة فتح الحجز';
+      } else {
+        btn.className = 'flex-1 sm:flex-none px-3 py-2 rounded-xl text-xs font-bold border transition-all flex items-center justify-center gap-1.5 bg-rose-50 border-rose-200 text-rose-700 shadow-sm';
+        icon.textContent = '🛑';
+        text.textContent = 'إيقاف الحجز مؤقتاً';
+      }
+    }
+
+    function resetTodayAppointments() {
+      if (!confirm('هل تريد بالتأكيد تصفير حجوزات اليوم وإعادة جميع المقاعد شاغرة؟')) return;
+      
+      if (isFirebaseReady && db) {
+        const batch = db.batch();
+        getTodayAppointments().forEach(apt => {
+          batch.delete(db.collection('appointments').doc(apt.id));
+        });
+        batch.commit().then(() => showToast('تم تصفير حجوزات اليوم سحابياً.', 'info'));
+      }
+    }
+
+    // =========================================================================
+    // 9. ANALYTICS & PDF REPORT GENERATION
+    // =========================================================================
+    function getFilteredAnalyticsData() {
+      const now = new Date();
+      if (analyticsTimeframe === 'week') {
+        const weekAgo = new Date();
+        weekAgo.setDate(now.getDate() - 7);
+        const weekAgoStr = weekAgo.toISOString().split('T')[0];
+        return appointments.filter(a => a.date >= weekAgoStr);
+      } else if (analyticsTimeframe === 'month') {
+        const monthAgo = new Date();
+        monthAgo.setDate(now.getDate() - 30);
+        const monthAgoStr = monthAgo.toISOString().split('T')[0];
+        return appointments.filter(a => a.date >= monthAgoStr);
+      }
+      return appointments;
+    }
+
+    function renderAnalytics() {
+      const filtered = getFilteredAnalyticsData();
+      const totalBookings = filtered.reduce((s, a) => s + Number(a.partySize || 1), 0);
+      const newPatients = filtered.filter(a => a.type === 'new').reduce((s, a) => s + Number(a.partySize || 1), 0);
+      const followupPatients = filtered.filter(a => a.type === 'followup').reduce((s, a) => s + Number(a.partySize || 1), 0);
+
+      const newRatio = totalBookings > 0 ? Math.round((newPatients / totalBookings) * 100) : 0;
+      const followupRatio = totalBookings > 0 ? Math.round((followupPatients / totalBookings) * 100) : 0;
+
+      const daysCount = analyticsTimeframe === 'week' ? 7 : (analyticsTimeframe === 'month' ? 30 : Math.max(1, new Set(filtered.map(a => a.date)).size));
+      const avgPerDay = (totalBookings / daysCount).toFixed(1);
+      const totalCapacityPeriod = daysCount * clinicConfig.maxDailyCapacity;
+      const utilizationRate = totalCapacityPeriod > 0 ? Math.min(100, Math.round((totalBookings / totalCapacityPeriod) * 100)) : 0;
+
+      document.getElementById('analyticsTotalBookings').textContent = totalBookings;
+      document.getElementById('analyticsAvgPerDay').textContent = `${avgPerDay} مريض / يوم`;
+      document.getElementById('analyticsNewRatio').textContent = `${newRatio}%`;
+      document.getElementById('analyticsNewCount').textContent = `${newPatients} مريض جديد`;
+      document.getElementById('analyticsFollowupRatio').textContent = `${followupRatio}%`;
+      document.getElementById('analyticsFollowupCount').textContent = `${followupPatients} مراجعة`;
+      document.getElementById('analyticsUtilizationRate').textContent = `${utilizationRate}%`;
+
+      // توزيع الخدمات
+      const serviceCounts = {};
+      filtered.forEach(a => {
+        serviceCounts[a.service] = (serviceCounts[a.service] || 0) + Number(a.partySize || 1);
+      });
+
+      const servicesContainer = document.getElementById('servicesBarsContainer');
+      const serviceEntries = Object.entries(serviceCounts).sort((a, b) => b[1] - a[1]);
+      document.getElementById('servicesChartTotalBadge').textContent = `${totalBookings} إجراء`;
+
+      if (serviceEntries.length === 0) {
+        servicesContainer.innerHTML = '<p class="text-xs text-slate-400 py-3 text-center">لا توجد سجلات في هذا النطاق.</p>';
+      } else {
+        servicesContainer.innerHTML = serviceEntries.map(([svc, count]) => {
+          const pct = totalBookings > 0 ? Math.round((count / totalBookings) * 100) : 0;
+          return `
+            <div>
+              <div class="flex justify-between text-xs font-bold text-slate-700 mb-1">
+                <span class="truncate">${svc}</span>
+                <span class="text-clinic-700 flex-shrink-0">${count} (${pct}%)</span>
+              </div>
+              <div class="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
+                <div class="bg-gradient-to-r from-clinic-600 to-teal-400 h-2 rounded-full" style="width: ${pct}%"></div>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+
+      // توزيع أيام الأسبوع
+      const daysCountMap = { 'السبت': 0, 'الأحد': 0, 'الإثنين': 0, 'الثلاثاء': 0, 'الأربعاء': 0, 'الخميس': 0, 'الجمعة': 0 };
+      filtered.forEach(a => {
+        if (a.date) {
+          const d = new Date(a.date);
+          const dayName = ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'][d.getDay()];
+          if (daysCountMap[dayName] !== undefined) {
+            daysCountMap[dayName] += Number(a.partySize || 1);
+          }
+        }
+      });
+
+      const daysContainer = document.getElementById('daysBarsContainer');
+      const maxDayCount = Math.max(...Object.values(daysCountMap), 1);
+
+      daysContainer.innerHTML = Object.entries(daysCountMap).map(([day, count]) => {
+        const pct = Math.round((count / maxDayCount) * 100);
+        return `
+          <div>
+            <div class="flex justify-between text-xs font-bold text-slate-700 mb-1">
+              <span>${day}</span>
+              <span class="text-slate-500">${count} مريض</span>
+            </div>
+            <div class="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
+              <div class="bg-gradient-to-r from-sky-500 to-clinic-500 h-1.5 rounded-full" style="width: ${pct}%"></div>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      // مستند الـ PDF
+      document.getElementById('pdfPrintDate').textContent = new Date().toISOString().split('T')[0];
+      document.getElementById('pdfPeriodLabel').textContent = analyticsTimeframe === 'week' ? 'إحصائية الأسبوع' : (analyticsTimeframe === 'month' ? 'إحصائية الشهر' : 'كافة السجلات');
+      document.getElementById('pdfTotalPatients').textContent = totalBookings;
+      document.getElementById('pdfNewPatients').textContent = `${newPatients} (${newRatio}%)`;
+      document.getElementById('pdfFollowupPatients').textContent = `${followupPatients} (${followupRatio}%)`;
+      document.getElementById('pdfUtilization').textContent = `${utilizationRate}%`;
+
+      const pdfServicesTable = document.getElementById('pdfServicesTableBody');
+      pdfServicesTable.innerHTML = serviceEntries.map(([svc, count]) => {
+        const pct = totalBookings > 0 ? Math.round((count / totalBookings) * 100) : 0;
+        return `
+          <tr style="border-bottom: 1px solid #e2e8f0;">
+            <td style="padding: 5px 8px; font-weight: bold;">${svc}</td>
+            <td style="padding: 5px 8px; text-align: center;">${count}</td>
+            <td style="padding: 5px 8px; text-align: center;">${pct}%</td>
+          </tr>
+        `;
+      }).join('');
+
+      const pdfPatientsTable = document.getElementById('pdfPatientsTableBody');
+      pdfPatientsTable.innerHTML = filtered.slice(0, 30).map(a => `
+        <tr style="border-bottom: 1px solid #e2e8f0;">
+          <td style="padding: 4px 6px;">${a.date}</td>
+          <td style="padding: 4px 6px; font-weight: bold;">${a.name}</td>
+          <td style="padding: 4px 6px;" dir="ltr">${a.phone}</td>
+          <td style="padding: 4px 6px;">${a.type === 'new' ? 'جديد' : 'مراجعة'}</td>
+          <td style="padding: 4px 6px;">${a.service}</td>
+          <td style="padding: 4px 6px; text-align: center;">${a.partySize}</td>
+          <td style="padding: 4px 6px;">${a.timeSlot}</td>
+        </tr>
+      `).join('');
+    }
+
+    function setAnalyticsTimeframe(timeframe) {
+      analyticsTimeframe = timeframe;
+      const wBtn = document.getElementById('timeframeWeekBtn');
+      const mBtn = document.getElementById('timeframeMonthBtn');
+      const aBtn = document.getElementById('timeframeAllBtn');
+
+      const activeClass = 'px-2.5 py-1 rounded-lg bg-white text-clinic-700 shadow-sm transition-all';
+      const inactiveClass = 'px-2.5 py-1 rounded-lg text-slate-600 hover:text-slate-900 transition-all';
+
+      wBtn.className = timeframe === 'week' ? activeClass : inactiveClass;
+      mBtn.className = timeframe === 'month' ? activeClass : inactiveClass;
+      aBtn.className = timeframe === 'all' ? activeClass : inactiveClass;
+
+      renderAnalytics();
+    }
+
+    function printOrExportPdfReport() {
+      renderAnalytics();
+      const reportDiv = document.getElementById('printablePdfReport');
+      reportDiv.classList.remove('hidden');
+
+      const cleanupPrint = () => {
+        reportDiv.classList.add('hidden');
+        window.removeEventListener('afterprint', cleanupPrint);
+      };
+      window.addEventListener('afterprint', cleanupPrint);
+
+      setTimeout(() => {
+        window.print();
+        setTimeout(cleanupPrint, 1000);
+      }, 200);
+    }
+
+    function exportAnalyticsCsv() {
+      const data = getFilteredAnalyticsData();
+      if (data.length === 0) {
+        showToast('لا توجد بيانات لتصديرها.', 'warning');
+        return;
+      }
+
+      const headers = ['التاريخ', 'اسم المريض', 'الهاتف', 'النوع', 'الخدمة', 'المقاعد', 'الموعد', 'الحالة'];
+      const rows = data.map(a => [
+        a.date,
+        `"${a.name}"`,
+        `"${a.phone}"`,
+        a.type === 'new' ? 'جديد' : 'مراجعة',
+        `"${a.service}"`,
+        a.partySize,
+        `"${a.timeSlot}"`,
+        a.status
+      ]);
+
+      const csvContent = '\uFEFF' + [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.setAttribute('href', url);
+      link.setAttribute('download', `dental_report_${analyticsTimeframe}_${new Date().toISOString().split('T')[0]}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      showToast('تم تصدير ملف Excel/CSV بنجاح!', 'success');
+    }
+
+    function loadAnalyticsDemoData() {
+      const names = ['سالم الحلبي', 'مها الرفاعي', 'كمال بدر', 'نور قدور', 'طارق الشام'];
+      const services = ['كشف وفحص ألم طارئ', 'علاج عصب وحشوات تجميلية', 'تنظيف وتلميع وتبييض الأسنان', 'تقويم الأسنان واستشارة'];
+      const demoList = [];
+      const today = new Date();
+
+      for (let i = 0; i < 20; i++) {
+        const d = new Date();
+        d.setDate(today.getDate() - (i % 15));
+        demoList.push({
+          id: 'DEMO-' + (200 + i),
+          name: names[i % names.length],
+          phone: '09' + Math.floor(10000000 + Math.random() * 90000000),
+          type: i % 3 === 0 ? 'followup' : 'new',
+          service: services[i % services.length],
+          partySize: (i % 5 === 0) ? 2 : 1,
+          timeSlot: `${(12 + (i % 5))}:00 ظهر/مساء`,
+          notes: 'حالة تجريبية',
+          status: 'مؤكد',
+          date: d.toISOString().split('T')[0],
+          createdAt: d.getTime()
+        });
+      }
+
+      appointments = demoList;
+      updateCapacityUI();
+      renderAppointmentsTable();
+      renderAnalytics();
+      showToast('تم توليد بيانات تجريبية للإحصائيات!', 'success');
+    }
+
+    // =========================================================================
+    // 10. CLINIC SETTINGS MODAL
+    // =========================================================================
+    function openClinicSettingsModal() {
+      if (!isDoctorAuthenticated) {
+        openDoctorAuthModal();
+        return;
+      }
+      document.getElementById('settingDoctorGender').value = clinicConfig.doctorGender || 'د.';
+      document.getElementById('settingDoctorName').value = clinicConfig.doctorName || '';
+      document.getElementById('settingSpecialty').value = clinicConfig.specialty || '';
+      document.getElementById('settingStartHour').value = clinicConfig.startHour || '12:00';
+      document.getElementById('settingEndHour').value = clinicConfig.endHour || '18:00';
+      document.getElementById('settingMaxCapacity').value = clinicConfig.maxDailyCapacity || 15;
+      document.getElementById('settingSlotDuration').value = clinicConfig.slotDuration || 45;
+      document.getElementById('settingShowRemainingSeats').checked = clinicConfig.showRemainingSeatsToPatients !== false;
+      document.getElementById('settingAddress').value = clinicConfig.address || '';
+      document.getElementById('settingPhone').value = clinicConfig.phone || '';
+
+      const checkboxes = document.querySelectorAll('input[name="workDaySetting"]');
+      checkboxes.forEach(cb => {
+        cb.checked = (clinicConfig.workDays || []).includes(cb.value);
+      });
+
+      document.getElementById('clinicSettingsModal').classList.remove('hidden');
+    }
+
+    function closeClinicSettingsModal() {
+      document.getElementById('clinicSettingsModal').classList.add('hidden');
+    }
+
+    function saveClinicSettings(event) {
+      event.preventDefault();
+
+      clinicConfig.doctorGender = document.getElementById('settingDoctorGender').value;
+      clinicConfig.doctorName = document.getElementById('settingDoctorName').value.trim();
+      clinicConfig.specialty = document.getElementById('settingSpecialty').value.trim();
+      clinicConfig.startHour = document.getElementById('settingStartHour').value;
+      clinicConfig.endHour = document.getElementById('settingEndHour').value;
+      clinicConfig.maxDailyCapacity = parseInt(document.getElementById('settingMaxCapacity').value) || 15;
+      clinicConfig.slotDuration = parseInt(document.getElementById('settingSlotDuration').value) || 45;
+      clinicConfig.showRemainingSeatsToPatients = document.getElementById('settingShowRemainingSeats').checked;
+      clinicConfig.address = document.getElementById('settingAddress').value.trim();
+      clinicConfig.phone = document.getElementById('settingPhone').value.trim();
+
+      const selectedDays = [];
+      document.querySelectorAll('input[name="workDaySetting"]:checked').forEach(cb => selectedDays.push(cb.value));
+      clinicConfig.workDays = selectedDays;
+
+      saveClinicConfigToCloud();
+      syncClinicUI();
+      renderAnalytics();
+      closeClinicSettingsModal();
+    }
+
+    function selectDentalService(serviceName, buttonEl) {
+      document.getElementById('selectedServiceInput').value = serviceName;
+      document.querySelectorAll('.service-card').forEach(btn => {
+        btn.classList.remove('border-clinic-600', 'bg-clinic-50', 'text-clinic-800', 'border-2');
+        btn.classList.add('border-slate-200', 'bg-white', 'text-slate-700', 'border');
+      });
+      buttonEl.classList.remove('border-slate-200', 'bg-white', 'text-slate-700', 'border');
+      buttonEl.classList.add('border-clinic-600', 'bg-clinic-50', 'text-clinic-800', 'border-2');
+    }
+
+    function handlePartySizeChange() {
+      const requested = parseInt(document.getElementById('partySizeSelect').value);
+      const remaining = getRemainingSeats();
+      const partyAlert = document.getElementById('partySizeAlert');
+      if (requested > remaining && remaining > 0) {
+        partyAlert.innerHTML = `<span class="text-rose-600 font-bold">تنبيه: متبقي فقط ${remaining} مقاعد لليوم.</span>`;
+      } else {
+        partyAlert.innerHTML = 'يُحسم العدد فوراً من طاقة العيادة لليوم.';
+      }
+    }
+
+    function filterAppointmentsTable(filterType) {
+      currentFilter = filterType;
+      document.getElementById('filterAllBtn').className = filterType === 'all' ? 'px-2.5 py-1 rounded-lg bg-clinic-600 text-white font-bold' : 'px-2.5 py-1 rounded-lg bg-slate-200 text-slate-700 font-semibold';
+      document.getElementById('filterNewBtn').className = filterType === 'new' ? 'px-2.5 py-1 rounded-lg bg-clinic-600 text-white font-bold' : 'px-2.5 py-1 rounded-lg bg-slate-200 text-slate-700 font-semibold';
+      document.getElementById('filterFollowBtn').className = filterType === 'followup' ? 'px-2.5 py-1 rounded-lg bg-clinic-600 text-white font-bold' : 'px-2.5 py-1 rounded-lg bg-slate-200 text-slate-700 font-semibold';
+      renderAppointmentsTable();
+    }
+
+    function toggleSound() {
+      soundEnabled = !soundEnabled;
+      const icon = document.getElementById('soundIcon');
+      if (soundEnabled) {
+        icon.textContent = '🔊';
+        showToast('تم تفعيل صوت الرنين', 'success');
+        playDoctorChimeSound();
+      } else {
+        icon.textContent = '🔇';
+        showToast('تم كتم صوت الرنين', 'info');
+      }
+    }
+
+    function showReceiptModal(apt) {
+      document.getElementById('receiptPatientName').textContent = apt.name;
+      document.getElementById('receiptType').textContent = apt.type === 'new' ? 'مريض جديد' : 'مراجعة ومتابعة';
+      document.getElementById('receiptService').textContent = apt.service;
+      document.getElementById('receiptParty').textContent = `${apt.partySize} ${Number(apt.partySize) === 1 ? 'مريض واحد' : 'مرضى'}`;
+      document.getElementById('receiptTime').textContent = apt.timeSlot;
+      document.getElementById('successModal').classList.remove('hidden');
+    }
+
+    function closeSuccessModal() {
+      document.getElementById('successModal').classList.add('hidden');
+    }
+
+    function dismissNotificationBanner() {
+      document.getElementById('doctorIncomingNotification').classList.add('hidden');
+    }
+
+    let toastTimeout;
+    function showToast(message, type = 'info') {
+      clearTimeout(toastTimeout);
+      const toast = document.getElementById('customToast');
+      const box = document.getElementById('toastBox');
+      const msg = document.getElementById('toastMessage');
+
+      msg.textContent = message;
+      if (type === 'error') {
+        box.className = 'p-3 rounded-2xl shadow-xl border flex items-center justify-between gap-2 text-xs font-bold text-white bg-rose-600 border-rose-700';
+      } else if (type === 'success') {
+        box.className = 'p-3 rounded-2xl shadow-xl border flex items-center justify-between gap-2 text-xs font-bold text-white bg-emerald-600 border-emerald-700';
+      } else if (type === 'warning') {
+        box.className = 'p-3 rounded-2xl shadow-xl border flex items-center justify-between gap-2 text-xs font-bold text-white bg-amber-600 border-amber-700';
+      } else {
+        box.className = 'p-3 rounded-2xl shadow-xl border flex items-center justify-between gap-2 text-xs font-bold text-white bg-slate-900 border-slate-800';
+      }
+
+      toast.classList.remove('hidden');
+      toastTimeout = setTimeout(() => {
+        toast.classList.add('hidden');
+      }, 3500);
+    }
+
+    function hideToast() {
+      document.getElementById('customToast').classList.add('hidden');
+    }
+
+    // Window global bindings
+    window.selectDentalService = selectDentalService;
+    window.handlePartySizeChange = handlePartySizeChange;
+    window.handlePatientBooking = handlePatientBooking;
+    window.openDoctorAuthModal = openDoctorAuthModal;
+    window.closeDoctorAuthModal = closeDoctorAuthModal;
+    window.switchAuthTab = switchAuthTab;
+    window.handleDoctorAuthSubmit = handleDoctorAuthSubmit;
+    window.quickFillDoctorDemo = quickFillDoctorDemo;
+    window.handleDoctorLogout = handleDoctorLogout;
+    window.requestSystemNotificationPermission = requestSystemNotificationPermission;
+    window.switchDoctorView = switchDoctorView;
+    window.openClinicSettingsModal = openClinicSettingsModal;
+    window.closeClinicSettingsModal = closeClinicSettingsModal;
+    window.saveClinicSettings = saveClinicSettings;
+    window.filterAppointmentsTable = filterAppointmentsTable;
+    window.removeAppointment = removeAppointment;
+    window.toggleEmergencyLock = toggleEmergencyLock;
+    window.resetTodayAppointments = resetTodayAppointments;
+    window.setAnalyticsTimeframe = setAnalyticsTimeframe;
+    window.printOrExportPdfReport = printOrExportPdfReport;
+    window.exportAnalyticsCsv = exportAnalyticsCsv;
+    window.loadAnalyticsDemoData = loadAnalyticsDemoData;
+    window.toggleSound = toggleSound;
+    window.closeSuccessModal = closeSuccessModal;
+    window.dismissNotificationBanner = dismissNotificationBanner;
+    window.hideToast = hideToast;
+
+    // تشغيل التطبيق
+    window.addEventListener('DOMContentLoaded', () => {
+      initFirebaseService();
+      syncClinicUI();
+    });
+  </script>
+</body>
+</html>
