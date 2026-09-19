@@ -1039,21 +1039,17 @@
           document.getElementById('doctorLoggedInEmail').textContent = user.email;
           
           setTabActiveVisual('tabDoctorLive');
-          listenToAppointmentsRealtime();
         } else {
-          // وضع عدم تسجيل الدخول:
+          // وضع المريض:
           document.getElementById('viewPatient').classList.remove('hidden');
           document.getElementById('viewDoctorDashboard').classList.add('hidden');
           document.getElementById('viewDoctorAnalytics').classList.add('hidden');
           document.getElementById('doctorAuthBar').classList.add('hidden');
           document.getElementById('doctorNavTabs').classList.add('hidden');
           document.getElementById('footerDoctorLoginBtn').classList.remove('hidden');
-          
-          if (appointmentsUnsubscribe) {
-            appointmentsUnsubscribe();
-            appointmentsUnsubscribe = null;
-          }
         }
+        recalculateCapacity();
+        generateTimeSlots(clinicConfig.startHour, clinicConfig.endHour, clinicConfig.slotDuration);
       });
     }
 
@@ -1110,20 +1106,14 @@
       document.getElementById('bannerDays').textContent = daysText;
       document.getElementById('navWorkingHoursSummary').innerHTML = `
         <span class="inline-block w-1.5 h-1.5 rounded-full bg-emerald-500 flex-shrink-0"></span>
-        ${daysText} (${cfg.startHour} - ${cfg.endHour})
-      `;
-
-      document.getElementById('maxCapacityDisplay').textContent = cfg.maxDailyCapacity;
-
-      const seatsContainer = document.getElementById('seatsCounterContainer');
-      if (cfg.showRemainingSeatsToPatients === false && !currentDoctorUser) {
-        seatsContainer.classList.add('hidden');
-      } else {
-        seatsContainer.classList.remove('hidden');
-      }
-
-      generateTimeSlots(cfg.startHour, cfg.endHour, cfg.slotDuration);
-      recalculateCapacity();
+    function cleanSlotString(str) {
+      if (!str) return '';
+      return str
+        .replace(/[\u0660-\u0669]/g, d => d.charCodeAt(0) - 0x0660)
+        .replace(/مساءً/g, 'م')
+        .replace(/صباحاً/g, 'ص')
+        .replace(/\s+/g, '')
+        .trim();
     }
 
     function generateTimeSlots(start, end, duration) {
@@ -1133,8 +1123,8 @@
       const currentSelected = select.value;
       select.innerHTML = '';
 
-      // جمع كافة المواعيد التي تم حجزها مسبقاً لليوم لمنع الحجز المزدوج
-      const bookedSlots = todayAppointments.map(a => a.timeSlot);
+      // جمع كافة المواعيد التي تم حجزها مسبقاً لليوم مع تنظيف وتوحيد التنسيق
+      const bookedCleanSlots = todayAppointments.map(a => cleanSlotString(a.timeSlot));
 
       let [startH, startM] = start.split(':').map(Number);
       let [endH, endM] = end.split(':').map(Number);
@@ -1152,14 +1142,14 @@
         const displayH = h > 12 ? h - 12 : (h === 0 ? 12 : h);
         const timeStr = `${String(displayH).padStart(2, '0')}:${String(m).padStart(2, '0')} ${period}`;
         
-        const isBooked = bookedSlots.includes(timeStr);
+        const isBooked = bookedCleanSlots.includes(cleanSlotString(timeStr));
 
         const opt = document.createElement('option');
         opt.value = timeStr;
         if (isBooked) {
           opt.disabled = true;
           opt.textContent = `${timeStr} (محجوز ✕)`;
-          opt.className = 'text-slate-400 bg-slate-100 font-normal';
+          opt.className = 'text-rose-500 bg-slate-100 font-semibold';
         } else {
           opt.textContent = timeStr;
           if (!firstAvailableValue) {
@@ -1171,11 +1161,18 @@
         currentTotal += Number(duration);
       }
 
-      // الحفاظ على اختيار المريض إذا كان الموعد لا يزال متاحاً، وإلا اختيار أول موعد شاغر
-      if (currentSelected && !bookedSlots.includes(currentSelected) && Array.from(select.options).some(o => o.value === currentSelected && !o.disabled)) {
+      // الانتقال التلقائي لأول موعد متاح ومنع اختيار الموعد المحجوز إطلاقاً
+      if (currentSelected && !bookedCleanSlots.includes(cleanSlotString(currentSelected)) && Array.from(select.options).some(o => o.value === currentSelected && !o.disabled)) {
         select.value = currentSelected;
       } else if (firstAvailableValue) {
         select.value = firstAvailableValue;
+      } else {
+        const fullOpt = document.createElement('option');
+        fullOpt.value = "";
+        fullOpt.disabled = true;
+        fullOpt.selected = true;
+        fullOpt.textContent = "لا توجد مواعيد شاغرة لليوم";
+        select.appendChild(fullOpt);
       }
     }
 
@@ -1199,7 +1196,7 @@
             }
           });
 
-          if (!isInitialLoad && snapshot.docChanges) {
+          if (!isInitialLoad && snapshot.docChanges && currentDoctorUser) {
             snapshot.docChanges().forEach((change) => {
               if (change.type === 'added') {
                 const newBooking = change.doc.data();
@@ -1214,7 +1211,6 @@
           todayAppointments = updated;
           renderAppointmentsTable();
           recalculateCapacity();
-          // تحديث قائمة المواعيد لتعطيل المواعيد المحجوزة فوراً للمرضى
           generateTimeSlots(clinicConfig.startHour, clinicConfig.endHour, clinicConfig.slotDuration);
         }, (err) => {
           console.error("خطأ في جلب المواعيد:", err);
@@ -1284,6 +1280,11 @@
       const notes = document.getElementById('patientNotes').value.trim();
       const todayStr = new Date().toISOString().split('T')[0];
 
+      if (!timeSlot) {
+        alert("يرجى اختيار موعد متاح من القائمة.");
+        return;
+      }
+
       const bookedSeats = todayAppointments.reduce((sum, item) => sum + (Number(item.partySize) || 1), 0);
       const maxCap = Number(clinicConfig.maxDailyCapacity) || 15;
       if (bookedSeats + partySize > maxCap) {
@@ -1291,46 +1292,77 @@
         return;
       }
 
-      // التحقق الصارم من عدم حجز نفس الموعد مسبقاً
-      const isSlotAlreadyTaken = todayAppointments.some(item => item.timeSlot === timeSlot);
-      if (isSlotAlreadyTaken) {
-        alert(`عذراً، الموعد (${timeSlot}) تم حجزه مسبقاً لمريض آخر! يرجى اختيار موعد متاح آخر.`);
+      // تحقق محلي فوري
+      const isSlotAlreadyTakenLocally = todayAppointments.some(item => cleanSlotString(item.timeSlot) === cleanSlotString(timeSlot));
+      if (isSlotAlreadyTakenLocally) {
+        alert(`عذراً، الموعد (${timeSlot}) تم حجزه مسبقاً! تم تحديث القائمة لاختيار موعد متاح آخر.`);
         generateTimeSlots(clinicConfig.startHour, clinicConfig.endHour, clinicConfig.slotDuration);
         return;
       }
 
       submitBtn.disabled = true;
-      submitBtn.innerHTML = `<span>جاري تثبيت الحجز...</span>`;
-
-      const bookingRecord = {
-        name,
-        phone,
-        type,
-        service,
-        partySize,
-        timeSlot,
-        notes,
-        date: todayStr,
-        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-        timeStr: new Date().toLocaleTimeString('ar-SY', { hour: '2-digit', minute: '2-digit' })
-      };
+      submitBtn.innerHTML = `<span>جاري التحقق وتثبيت الحجز...</span>`;
 
       try {
         if (db) {
+          // فحص مباشر وفوري من قاعدة البيانات السحابية لمنع التضارب إذا حجز شخصان بنفس الثانية
+          const checkSnapshot = await db.collection('appointments')
+            .where('date', '==', todayStr)
+            .get();
+
+          const isConflict = checkSnapshot.docs.some(doc => {
+            const data = doc.data();
+            return cleanSlotString(data.timeSlot) === cleanSlotString(timeSlot);
+          });
+
+          if (isConflict) {
+            alert(`نعتذر، تم حجز الموعد (${timeSlot}) قبل ثوانٍ من قبل مريض آخر! يرجى اختيار موعد شاغر.`);
+            generateTimeSlots(clinicConfig.startHour, clinicConfig.endHour, clinicConfig.slotDuration);
+            submitBtn.disabled = false;
+            recalculateCapacity();
+            return;
+          }
+
+          const bookingRecord = {
+            name,
+            phone,
+            type,
+            service,
+            partySize,
+            timeSlot,
+            notes,
+            date: todayStr,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+            timeStr: new Date().toLocaleTimeString('ar-SY', { hour: '2-digit', minute: '2-digit' })
+          };
+
           await db.collection('appointments').add(bookingRecord);
         } else {
-          bookingRecord.id = 'local_' + Date.now();
+          const bookingRecord = {
+            id: 'local_' + Date.now(),
+            name,
+            phone,
+            type,
+            service,
+            partySize,
+            timeSlot,
+            notes,
+            date: todayStr,
+            createdAt: new Date(),
+            timeStr: new Date().toLocaleTimeString('ar-SY', { hour: '2-digit', minute: '2-digit' })
+          };
           todayAppointments.push(bookingRecord);
           renderAppointmentsTable();
           recalculateCapacity();
+          generateTimeSlots(clinicConfig.startHour, clinicConfig.endHour, clinicConfig.slotDuration);
         }
 
-        alert(`تم تثبيت موعدك بنجاح في عيادة ${clinicConfig.doctorGender} ${clinicConfig.doctorName}\nالوقت التقريبي: ${timeSlot}`);
+        alert(`تم تثبيت موعدك بنجاح في عيادة ${clinicConfig.doctorGender} ${clinicConfig.doctorName}\nالوقت المحجوز: ${timeSlot}`);
         document.getElementById('bookingForm').reset();
         document.getElementById('selectedServiceInput').value = 'كشف وفحص ألم طارئ';
       } catch (err) {
         console.error("فشل الحجز:", err);
-        alert("حدث خطأ أثناء الاتصال بالخادم، يرجى المحاولة ثانية.");
+        alert("حدث خطأ أثناء الاتصال بالخادم، يرجى المحاولة ثانية: " + err.message);
       } finally {
         submitBtn.disabled = false;
         recalculateCapacity();
@@ -1931,6 +1963,8 @@
     // ==========================================
     window.addEventListener('DOMContentLoaded', () => {
       listenToClinicSettingsRealtime();
+      // استماع دائم للمواعيد لجميع الأجهزة (المرضى والطبيب) لتعطيل المواعيد المحجوزة فوراً
+      listenToAppointmentsRealtime();
     });
   </script>
 </body>
