@@ -125,20 +125,20 @@
         <div id="doctorAuthBar" class="hidden flex items-center gap-1 sm:gap-2">
           <!-- System Push Notification Permissions -->
           <button id="systemNotifBtn" onclick="requestSystemNotificationPermission()" title="تفعيل إشعارات النظام" 
-            class="p-2 text-slate-600 hover:text-clinic-600 bg-slate-100 rounded-xl transition-all text-xs flex items-center gap-1">
+            class="p-2 text-slate-600 hover:text-clinic-600 bg-slate-100 rounded-xl transition-all text-xs flex items-center gap-1 cursor-pointer">
             <span id="systemNotifIcon">🔔</span>
             <span class="hidden md:inline text-[10px] font-bold">إشعارات النظام</span>
           </button>
 
           <!-- Audio Chime Toggle -->
           <button id="soundToggleBtn" onclick="toggleSound()" title="تشغيل/كتم صوت الرنين" 
-            class="p-2 text-slate-600 hover:text-clinic-600 bg-slate-100 rounded-xl transition-all text-xs">
+            class="p-2 text-slate-600 hover:text-clinic-600 bg-slate-100 rounded-xl transition-all text-xs cursor-pointer">
             <span id="soundIcon">🔊</span>
           </button>
 
           <!-- Exit Doctor Mode -->
           <button onclick="handleDoctorLogout()" 
-            class="px-2.5 py-1.5 rounded-xl text-rose-700 bg-rose-50 hover:bg-rose-100 border border-rose-200 text-xs font-bold transition-all flex items-center gap-1"
+            class="px-2.5 py-1.5 rounded-xl text-rose-700 bg-rose-50 hover:bg-rose-100 border border-rose-200 text-xs font-bold transition-all flex items-center gap-1 cursor-pointer"
             title="تسجيل خروج">
             <span>🚪</span>
             <span class="hidden sm:inline">خروج</span>
@@ -152,16 +152,16 @@
     <div id="doctorNavTabs" class="hidden border-t border-slate-100 bg-slate-50/80 px-4 py-1.5 no-print">
       <div class="max-w-4xl mx-auto flex items-center justify-center gap-2">
         <button id="tabDoctorLive" onclick="switchDoctorView('dashboard')" 
-          class="flex-1 py-1.5 px-3 rounded-lg text-xs font-bold transition-all bg-white text-clinic-700 shadow-sm border border-slate-200 text-center relative">
+          class="flex-1 py-1.5 px-3 rounded-lg text-xs font-bold transition-all bg-white text-clinic-700 shadow-sm border border-slate-200 text-center relative cursor-pointer">
           حجوزات اليوم
           <span id="navNotificationBadge" class="hidden absolute -top-1 -right-1 bg-rose-500 text-white text-[9px] w-4 h-4 rounded-full flex items-center justify-center font-bold">0</span>
         </button>
         <button id="tabDoctorAnalytics" onclick="switchDoctorView('analytics')" 
-          class="flex-1 py-1.5 px-3 rounded-lg text-xs font-semibold transition-all text-slate-600 hover:text-slate-900 border border-transparent text-center">
+          class="flex-1 py-1.5 px-3 rounded-lg text-xs font-semibold transition-all text-slate-600 hover:text-slate-900 border border-transparent text-center cursor-pointer">
           📊 الإحصائيات والـ PDF
         </button>
         <button onclick="openClinicSettingsModal()" 
-          class="flex-1 py-1.5 px-3 rounded-lg text-xs font-semibold transition-all text-slate-600 hover:text-slate-900 border border-transparent text-center">
+          class="flex-1 py-1.5 px-3 rounded-lg text-xs font-semibold transition-all text-slate-600 hover:text-slate-900 border border-transparent text-center cursor-pointer">
           ⚙️ الإعدادات
         </button>
       </div>
@@ -287,42 +287,42 @@
             <div class="grid grid-cols-2 sm:grid-cols-3 gap-2" id="servicesGrid">
               
               <button type="button" onclick="selectDentalService('كشف وفحص ألم طارئ', this)"
-                class="service-card p-2.5 rounded-xl border-2 border-clinic-600 bg-clinic-50 text-clinic-800 text-right transition-all">
+                class="service-card p-2.5 rounded-xl border-2 border-clinic-600 bg-clinic-50 text-clinic-800 text-right transition-all cursor-pointer">
                 <div class="text-base">🩺</div>
                 <div class="text-xs font-bold mt-0.5">كشف وفحص طارئ</div>
                 <div class="text-[9px] text-slate-500">تشخيص وتسكين الألم</div>
               </button>
 
-              <button type="button" onclick="selectDentalService('علاج عصب وحشوات تجميلية', this)"
-                class="service-card p-2.5 rounded-xl border border-slate-200 bg-white text-slate-700 text-right transition-all">
+              <button type="button" onclick="selectDentalService('علاج عصب وححشوات تجميلية', this)"
+                class="service-card p-2.5 rounded-xl border border-slate-200 bg-white text-slate-700 text-right transition-all cursor-pointer">
                 <div class="text-base">🦷</div>
                 <div class="text-xs font-bold mt-0.5">حشوات وعلاج عصب</div>
                 <div class="text-[9px] text-slate-500">سحب عصب وحشوة</div>
               </button>
 
               <button type="button" onclick="selectDentalService('تنظيف وتلميع وتبييض الأسنان', this)"
-                class="service-card p-2.5 rounded-xl border border-slate-200 bg-white text-slate-700 text-right transition-all">
+                class="service-card p-2.5 rounded-xl border border-slate-200 bg-white text-slate-700 text-right transition-all cursor-pointer">
                 <div class="text-base">✨</div>
                 <div class="text-xs font-bold mt-0.5">تنظيف وتبييض</div>
                 <div class="text-[9px] text-slate-500">إزالة الجير والتبييض</div>
               </button>
 
               <button type="button" onclick="selectDentalService('تقويم الأسنان واستشارة', this)"
-                class="service-card p-2.5 rounded-xl border border-slate-200 bg-white text-slate-700 text-right transition-all">
+                class="service-card p-2.5 rounded-xl border border-slate-200 bg-white text-slate-700 text-right transition-all cursor-pointer">
                 <div class="text-base">📐</div>
                 <div class="text-xs font-bold mt-0.5">تقويم الأسنان</div>
                 <div class="text-[9px] text-slate-500">استشارة أو جلسة شد</div>
               </button>
 
               <button type="button" onclick="selectDentalService('خلع وجراحة فموية', this)"
-                class="service-card p-2.5 rounded-xl border border-slate-200 bg-white text-slate-700 text-right transition-all">
+                class="service-card p-2.5 rounded-xl border border-slate-200 bg-white text-slate-700 text-right transition-all cursor-pointer">
                 <div class="text-base">⚡</div>
                 <div class="text-xs font-bold mt-0.5">خلع وجراحة فموية</div>
                 <div class="text-[9px] text-slate-500">ضرس عقل أو قلع</div>
               </button>
 
               <button type="button" onclick="selectDentalService('زراعة وتركيبات وتلبيس (Zircon)', this)"
-                class="service-card p-2.5 rounded-xl border border-slate-200 bg-white text-slate-700 text-right transition-all">
+                class="service-card p-2.5 rounded-xl border border-slate-200 bg-white text-slate-700 text-right transition-all cursor-pointer">
                 <div class="text-base">👑</div>
                 <div class="text-xs font-bold mt-0.5">زراعة وتركيبات</div>
                 <div class="text-[9px] text-slate-500">تعويض الأسنان والزرع</div>
@@ -375,7 +375,7 @@
           <!-- Submit Button -->
           <div class="pt-1">
             <button type="submit" id="submitBookingBtn"
-              class="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-clinic-600 to-teal-500 hover:from-clinic-700 hover:to-teal-600 text-white font-bold text-sm shadow-md shadow-clinic-500/25 transition-all flex items-center justify-center gap-2 active:scale-[0.98]">
+              class="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-clinic-600 to-teal-500 hover:from-clinic-700 hover:to-teal-600 text-white font-bold text-sm shadow-md shadow-clinic-500/25 transition-all flex items-center justify-center gap-2 active:scale-[0.98] cursor-pointer">
               <span>تأكيد الحجز فوراً</span>
               <svg class="w-4 h-4 rtl:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
@@ -411,13 +411,13 @@
         <div class="flex items-center gap-2 w-full sm:w-auto">
           <!-- Toggle Manual Lock -->
           <button id="toggleLockBtn" onclick="toggleEmergencyLock()" 
-            class="flex-1 sm:flex-none px-3 py-2 rounded-xl text-xs font-bold border transition-all flex items-center justify-center gap-1.5 bg-rose-50 border-rose-200 text-rose-700 hover:bg-rose-100 shadow-sm">
+            class="flex-1 sm:flex-none px-3 py-2 rounded-xl text-xs font-bold border transition-all flex items-center justify-center gap-1.5 bg-rose-50 border-rose-200 text-rose-700 hover:bg-rose-100 shadow-sm cursor-pointer">
             <span id="lockIcon">🛑</span>
             <span id="lockText">إيقاف الحجز مؤقتاً</span>
           </button>
 
           <!-- Reset Today -->
-          <button onclick="resetTodayAppointments()" class="px-3 py-2 text-xs font-semibold text-slate-600 hover:text-slate-800 bg-slate-100 rounded-xl transition-all">
+          <button onclick="resetTodayAppointments()" class="px-3 py-2 text-xs font-semibold text-slate-600 hover:text-slate-800 bg-slate-100 rounded-xl transition-all cursor-pointer">
             تصفير اليوم ↺
           </button>
         </div>
@@ -434,7 +434,7 @@
             <div id="latestNotificationText" class="text-xs font-bold truncate">حجز جديد</div>
           </div>
         </div>
-        <button onclick="dismissNotificationBanner()" class="text-xs bg-white/20 hover:bg-white/30 px-3 py-1 rounded-lg text-white font-bold flex-shrink-0">
+        <button onclick="dismissNotificationBanner()" class="text-xs bg-white/20 hover:bg-white/30 px-3 py-1 rounded-lg text-white font-bold flex-shrink-0 cursor-pointer">
           تم ✓
         </button>
       </div>
@@ -472,9 +472,9 @@
 
           <!-- Filters -->
           <div class="flex items-center gap-1 text-[11px]">
-            <button onclick="filterAppointmentsTable('all')" id="filterAllBtn" class="px-2.5 py-1 rounded-lg bg-clinic-600 text-white font-bold">الكل</button>
-            <button onclick="filterAppointmentsTable('new')" id="filterNewBtn" class="px-2.5 py-1 rounded-lg bg-slate-200 text-slate-700 font-semibold">جديد</button>
-            <button onclick="filterAppointmentsTable('followup')" id="filterFollowBtn" class="px-2.5 py-1 rounded-lg bg-slate-200 text-slate-700 font-semibold">مراجعة</button>
+            <button onclick="filterAppointmentsTable('all')" id="filterAllBtn" class="px-2.5 py-1 rounded-lg bg-clinic-600 text-white font-bold cursor-pointer">الكل</button>
+            <button onclick="filterAppointmentsTable('new')" id="filterNewBtn" class="px-2.5 py-1 rounded-lg bg-slate-200 text-slate-700 font-semibold cursor-pointer">جديد</button>
+            <button onclick="filterAppointmentsTable('followup')" id="filterFollowBtn" class="px-2.5 py-1 rounded-lg bg-slate-200 text-slate-700 font-semibold cursor-pointer">مراجعة</button>
           </div>
         </div>
 
@@ -528,13 +528,13 @@
 
           <!-- Timeframe selector -->
           <div class="bg-slate-100 p-1 rounded-xl flex items-center text-xs font-bold self-start sm:self-auto">
-            <button onclick="setAnalyticsTimeframe('week')" id="timeframeWeekBtn" class="px-2.5 py-1 rounded-lg bg-white text-clinic-700 shadow-sm transition-all">
+            <button onclick="setAnalyticsTimeframe('week')" id="timeframeWeekBtn" class="px-2.5 py-1 rounded-lg bg-white text-clinic-700 shadow-sm transition-all cursor-pointer">
               الأسبوع
             </button>
-            <button onclick="setAnalyticsTimeframe('month')" id="timeframeMonthBtn" class="px-2.5 py-1 rounded-lg text-slate-600 hover:text-slate-900 transition-all">
+            <button onclick="setAnalyticsTimeframe('month')" id="timeframeMonthBtn" class="px-2.5 py-1 rounded-lg text-slate-600 hover:text-slate-900 transition-all cursor-pointer">
               الشهر
             </button>
-            <button onclick="setAnalyticsTimeframe('all')" id="timeframeAllBtn" class="px-2.5 py-1 rounded-lg text-slate-600 hover:text-slate-900 transition-all">
+            <button onclick="setAnalyticsTimeframe('all')" id="timeframeAllBtn" class="px-2.5 py-1 rounded-lg text-slate-600 hover:text-slate-900 transition-all cursor-pointer">
               الكل
             </button>
           </div>
@@ -542,15 +542,15 @@
 
         <!-- Action buttons row -->
         <div class="flex flex-wrap items-center gap-2 pt-2 border-t border-slate-100">
-          <button onclick="printOrExportPdfReport()" class="flex-1 sm:flex-none px-3.5 py-2 rounded-xl text-xs font-bold bg-slate-900 hover:bg-slate-800 text-white shadow-sm transition-all flex items-center justify-center gap-1.5">
+          <button onclick="printOrExportPdfReport()" class="flex-1 sm:flex-none px-3.5 py-2 rounded-xl text-xs font-bold bg-slate-900 hover:bg-slate-800 text-white shadow-sm transition-all flex items-center justify-center gap-1.5 cursor-pointer">
             <span>🖨️ طباعة وحفظ تقرير PDF</span>
           </button>
           
-          <button onclick="exportAnalyticsCsv()" class="flex-1 sm:flex-none px-3 py-2 rounded-xl text-xs font-bold border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 transition-all flex items-center justify-center gap-1">
+          <button onclick="exportAnalyticsCsv()" class="flex-1 sm:flex-none px-3 py-2 rounded-xl text-xs font-bold border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 transition-all flex items-center justify-center gap-1 cursor-pointer">
             <span>📥 تصدير Excel/CSV</span>
           </button>
 
-          <button onclick="loadAnalyticsDemoData()" class="px-3 py-2 rounded-xl text-xs font-bold border border-teal-200 bg-teal-50 text-teal-800 hover:bg-teal-100 transition-all">
+          <button onclick="loadAnalyticsDemoData()" class="px-3 py-2 rounded-xl text-xs font-bold border border-teal-200 bg-teal-50 text-teal-800 hover:bg-teal-100 transition-all cursor-pointer">
             <span>⚡ تجربة بيانات</span>
           </button>
         </div>
@@ -618,7 +618,7 @@
       <!-- زر تسجيل دخول الطبيب السري في أسفل الصفحة -->
       <div id="footerDoctorAccessContainer">
         <button id="footerDoctorLoginBtn" onclick="openDoctorAuthModal()" 
-          class="text-slate-400 hover:text-clinic-700 transition-all font-semibold flex items-center gap-1">
+          class="text-slate-400 hover:text-clinic-700 transition-all font-semibold flex items-center gap-1 cursor-pointer">
           <span>🔒</span>
           <span>بوابة إدارة العيادة</span>
         </button>
@@ -722,10 +722,10 @@
 
       <!-- Tabs: Sign In / Register -->
       <div id="authTabsContainer" class="flex bg-slate-100 p-1 rounded-xl text-xs font-bold">
-        <button id="authTabLogin" onclick="switchAuthTab('login')" class="flex-1 py-2 rounded-lg bg-white text-clinic-700 shadow-sm transition-all">
+        <button id="authTabLogin" onclick="switchAuthTab('login')" class="flex-1 py-2 rounded-lg bg-white text-clinic-700 shadow-sm transition-all cursor-pointer">
           تسجيل الدخول
         </button>
-        <button id="authTabRegister" onclick="switchAuthTab('register')" class="flex-1 py-2 rounded-lg text-slate-600 hover:text-slate-900 transition-all">
+        <button id="authTabRegister" onclick="switchAuthTab('register')" class="flex-1 py-2 rounded-lg text-slate-600 hover:text-slate-900 transition-all cursor-pointer">
           حساب جديد
         </button>
       </div>
@@ -742,7 +742,7 @@
         <div id="authPasswordGroup">
           <div class="flex items-center justify-between mb-1">
             <label class="block font-bold text-slate-700" for="doctorAuthPassword">كلمة المرور</label>
-            <button type="button" onclick="showForgotPasswordPrompt()" class="text-[11px] text-clinic-600 hover:text-clinic-800 font-bold hover:underline">
+            <button type="button" onclick="showForgotPasswordPrompt()" class="text-[11px] text-clinic-600 hover:text-clinic-800 font-bold hover:underline cursor-pointer">
               نسيت كلمة المرور؟
             </button>
           </div>
@@ -750,7 +750,7 @@
             <input type="password" id="doctorAuthPassword" required minlength="6" placeholder="••••••••" dir="ltr"
               class="w-full px-3 py-2.5 pl-14 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-clinic-500 font-semibold text-slate-800">
             <button type="button" id="pwdToggleBtn" onclick="togglePasswordVisibility('doctorAuthPassword', this)"
-              class="absolute left-2 top-1/2 -translate-y-1/2 text-slate-500 hover:text-clinic-700 px-1.5 py-0.5 text-[10px] font-bold border border-slate-200 bg-slate-50 rounded-lg select-none transition-all">
+              class="absolute left-2 top-1/2 -translate-y-1/2 text-slate-500 hover:text-clinic-700 px-1.5 py-0.5 text-[10px] font-bold border border-slate-200 bg-slate-50 rounded-lg select-none transition-all cursor-pointer">
               إظهار
             </button>
           </div>
@@ -766,16 +766,16 @@
 
         <div class="pt-1 flex gap-2">
           <button type="submit" id="authSubmitBtn"
-            class="flex-1 py-2.5 bg-clinic-600 hover:bg-clinic-700 text-white font-bold rounded-xl transition-all shadow-md">
+            class="flex-1 py-2.5 bg-clinic-600 hover:bg-clinic-700 text-white font-bold rounded-xl transition-all shadow-md cursor-pointer">
             دخول للعيادة
           </button>
-          <button type="button" onclick="closeDoctorAuthModal()" class="px-3.5 py-2.5 bg-slate-100 text-slate-600 font-bold rounded-xl hover:bg-slate-200">
+          <button type="button" onclick="closeDoctorAuthModal()" class="px-3.5 py-2.5 bg-slate-100 text-slate-600 font-bold rounded-xl hover:bg-slate-200 cursor-pointer">
             إلغاء
           </button>
         </div>
       </form>
 
-      <!-- Forgot Password View (المعدلة والمزودة بحقل إدخال بريد مستقل لضمان عملها بشكل مباشر ومثالي) -->
+      <!-- Forgot Password View -->
       <div id="forgotPasswordView" class="hidden space-y-3 text-xs">
         <div>
           <label class="block font-bold text-slate-700 mb-1" for="doctorResetEmail">البريد الإلكتروني للعيادة</label>
@@ -787,11 +787,11 @@
           أدخل بريدك الإلكتروني المسجل وسيقوم نظام فايرباس بإرسال رابط رسمي مباشر لتعيين كلمة مرور جديدة لحسابك.
         </p>
 
-        <button type="button" id="sendResetBtn" onclick="sendPasswordResetRequest()" class="w-full py-2.5 bg-clinic-600 hover:bg-clinic-700 text-white font-bold rounded-xl transition-all shadow-md">
+        <button type="button" id="sendResetBtn" onclick="sendPasswordResetRequest()" class="w-full py-2.5 bg-clinic-600 hover:bg-clinic-700 text-white font-bold rounded-xl transition-all shadow-md cursor-pointer">
           إرسال رابط تعيين كلمة المرور
         </button>
         
-        <button type="button" onclick="backToLoginFromForgot()" class="w-full py-2 text-center text-slate-500 hover:text-slate-800 font-semibold">
+        <button type="button" onclick="backToLoginFromForgot()" class="w-full py-2 text-center text-slate-500 hover:text-slate-800 font-semibold cursor-pointer">
           ← العودة لتسجيل الدخول
         </button>
       </div>
@@ -807,7 +807,7 @@
         <h3 class="text-sm sm:text-base font-bold text-slate-900 flex items-center gap-1.5">
           <span>⚙️</span> إعدادات العيادة وساعات العمل
         </h3>
-        <button onclick="closeClinicSettingsModal()" class="text-slate-400 hover:text-slate-600 font-bold p-1">✕</button>
+        <button onclick="closeClinicSettingsModal()" class="text-slate-400 hover:text-slate-600 font-bold p-1 cursor-pointer">✕</button>
       </div>
 
       <form id="clinicSettingsForm" onsubmit="saveClinicSettings(event)" class="space-y-3.5 text-xs">
@@ -945,10 +945,10 @@
         </div>
 
         <div class="pt-2 flex gap-2">
-          <button type="submit" class="flex-1 py-2.5 bg-clinic-600 hover:bg-clinic-700 text-white font-bold rounded-xl shadow-md transition-all">
+          <button type="submit" class="flex-1 py-2.5 bg-clinic-600 hover:bg-clinic-700 text-white font-bold rounded-xl shadow-md transition-all cursor-pointer">
             حفظ وتحديث فوري للمرضى ✓
           </button>
-          <button type="button" onclick="closeClinicSettingsModal()" class="px-4 py-2.5 bg-slate-100 text-slate-600 font-bold rounded-xl hover:bg-slate-200">
+          <button type="button" onclick="closeClinicSettingsModal()" class="px-4 py-2.5 bg-slate-100 text-slate-600 font-bold rounded-xl hover:bg-slate-200 cursor-pointer">
             إلغاء
           </button>
         </div>
@@ -1102,14 +1102,32 @@
       const bannerPhone = document.getElementById('bannerPhoneText');
       if (bannerPhone) bannerPhone.textContent = cfg.phone || "0991234567";
 
-      const daysText = cfg.workDays.map(d => dayNamesAr[d]).join('، ');
+      const daysText = (cfg.workDays || []).map(d => dayNamesAr[d]).join('، ');
       document.getElementById('bannerDays').textContent = daysText;
       document.getElementById('navWorkingHoursSummary').innerHTML = `
         <span class="inline-block w-1.5 h-1.5 rounded-full bg-emerald-500 flex-shrink-0"></span>
+        الدوام: ${daysText} (${cfg.startHour} - ${cfg.endHour})
+      `;
+
+      // الطاقة الاستيعابية القصوى
+      document.getElementById('maxCapacityDisplay').textContent = cfg.maxDailyCapacity || 15;
+
+      // إظهار/إخفاء عداد المقاعد المتبقية للمرضى
+      const seatsContainer = document.getElementById('seatsCounterContainer');
+      if (cfg.showRemainingSeatsToPatients === false && !currentDoctorUser) {
+        seatsContainer.classList.add('hidden');
+      } else {
+        seatsContainer.classList.remove('hidden');
+      }
+
+      generateTimeSlots(cfg.startHour, cfg.endHour, cfg.slotDuration);
+      recalculateCapacity();
+    }
+
     function cleanSlotString(str) {
       if (!str) return '';
       return str
-        .replace(/[\u0660-\u0669]/g, d => d.charCodeAt(0) - 0x0660)
+        .replace(/[\u0660-\u0669]/g, d => String.fromCharCode(d.charCodeAt(0) - 0x0660 + 0x0030))
         .replace(/مساءً/g, 'م')
         .replace(/صباحاً/g, 'ص')
         .replace(/\s+/g, '')
@@ -1123,11 +1141,11 @@
       const currentSelected = select.value;
       select.innerHTML = '';
 
-      // جمع كافة المواعيد التي تم حجزها مسبقاً لليوم مع تنظيف وتوحيد التنسيق
+      // جمع كافة المواعيد التي تم حجزها مسبقاً لليوم مع توحيد التنسيق
       const bookedCleanSlots = todayAppointments.map(a => cleanSlotString(a.timeSlot));
 
-      let [startH, startM] = start.split(':').map(Number);
-      let [endH, endM] = end.split(':').map(Number);
+      let [startH, startM] = (start || "12:00").split(':').map(Number);
+      let [endH, endM] = (end || "18:00").split(':').map(Number);
 
       let currentTotal = startH * 60 + startM;
       const endTotal = endH * 60 + endM;
@@ -1158,10 +1176,10 @@
         }
         select.appendChild(opt);
 
-        currentTotal += Number(duration);
+        currentTotal += Number(duration || 45);
       }
 
-      // الانتقال التلقائي لأول موعد متاح ومنع اختيار الموعد المحجوز إطلاقاً
+      // الانتقال التلقائي لأول موعد متاح ومنع اختيار الموعد المحجوز
       if (currentSelected && !bookedCleanSlots.includes(cleanSlotString(currentSelected)) && Array.from(select.options).some(o => o.value === currentSelected && !o.disabled)) {
         select.value = currentSelected;
       } else if (firstAvailableValue) {
@@ -1390,9 +1408,9 @@
 
     function filterAppointmentsTable(filter) {
       currentFilter = filter;
-      document.getElementById('filterAllBtn').className = filter === 'all' ? 'px-2.5 py-1 rounded-lg bg-clinic-600 text-white font-bold' : 'px-2.5 py-1 rounded-lg bg-slate-200 text-slate-700 font-semibold';
-      document.getElementById('filterNewBtn').className = filter === 'new' ? 'px-2.5 py-1 rounded-lg bg-clinic-600 text-white font-bold' : 'px-2.5 py-1 rounded-lg bg-slate-200 text-slate-700 font-semibold';
-      document.getElementById('filterFollowBtn').className = filter === 'followup' ? 'px-2.5 py-1 rounded-lg bg-clinic-600 text-white font-bold' : 'px-2.5 py-1 rounded-lg bg-slate-200 text-slate-700 font-semibold';
+      document.getElementById('filterAllBtn').className = filter === 'all' ? 'px-2.5 py-1 rounded-lg bg-clinic-600 text-white font-bold cursor-pointer' : 'px-2.5 py-1 rounded-lg bg-slate-200 text-slate-700 font-semibold cursor-pointer';
+      document.getElementById('filterNewBtn').className = filter === 'new' ? 'px-2.5 py-1 rounded-lg bg-clinic-600 text-white font-bold cursor-pointer' : 'px-2.5 py-1 rounded-lg bg-slate-200 text-slate-700 font-semibold cursor-pointer';
+      document.getElementById('filterFollowBtn').className = filter === 'followup' ? 'px-2.5 py-1 rounded-lg bg-clinic-600 text-white font-bold cursor-pointer' : 'px-2.5 py-1 rounded-lg bg-slate-200 text-slate-700 font-semibold cursor-pointer';
       renderAppointmentsTable();
     }
 
@@ -1429,7 +1447,7 @@
           <td class="py-2.5 px-3 text-center font-bold">${item.partySize}</td>
           <td class="py-2.5 px-3 font-semibold text-clinic-800">${item.timeSlot}</td>
           <td class="py-2.5 px-3 text-center">
-            <button onclick="cancelAppointment('${item.id}')" class="text-rose-600 hover:text-rose-800 p-1 font-bold text-xs" title="إلغاء الموعد">✕</button>
+            <button onclick="cancelAppointment('${item.id}')" class="text-rose-600 hover:text-rose-800 p-1 font-bold text-xs cursor-pointer" title="إلغاء الموعد">✕</button>
           </td>
         </tr>
       `).join('');
@@ -1444,7 +1462,7 @@
                 ${item.type === 'new' ? 'جديد' : 'مراجعة'}
               </span>
             </div>
-            <button onclick="cancelAppointment('${item.id}')" class="text-rose-600 text-xs font-bold px-2 py-0.5 bg-rose-50 rounded-lg">إلغاء ✕</button>
+            <button onclick="cancelAppointment('${item.id}')" class="text-rose-600 text-xs font-bold px-2 py-0.5 bg-rose-50 rounded-lg cursor-pointer">إلغاء ✕</button>
           </div>
           <div class="text-[11px] text-slate-600 flex items-center justify-between">
             <span>${item.service}</span>
@@ -1501,10 +1519,10 @@
       const text = document.getElementById('lockText');
       if (clinicConfig.clinicManuallyClosed) {
         text.textContent = 'إعادة فتح الحجز';
-        btn.className = 'flex-1 sm:flex-none px-3 py-2 rounded-xl text-xs font-bold border transition-all flex items-center justify-center gap-1.5 bg-emerald-50 border-emerald-200 text-emerald-700 hover:bg-emerald-100 shadow-sm';
+        btn.className = 'flex-1 sm:flex-none px-3 py-2 rounded-xl text-xs font-bold border transition-all flex items-center justify-center gap-1.5 bg-emerald-50 border-emerald-200 text-emerald-700 hover:bg-emerald-100 shadow-sm cursor-pointer';
       } else {
         text.textContent = 'إيقاف الحجز مؤقتاً';
-        btn.className = 'flex-1 sm:flex-none px-3 py-2 rounded-xl text-xs font-bold border transition-all flex items-center justify-center gap-1.5 bg-rose-50 border-rose-200 text-rose-700 hover:bg-rose-100 shadow-sm';
+        btn.className = 'flex-1 sm:flex-none px-3 py-2 rounded-xl text-xs font-bold border transition-all flex items-center justify-center gap-1.5 bg-rose-50 border-rose-200 text-rose-700 hover:bg-rose-100 shadow-sm cursor-pointer';
       }
 
       if (db) {
@@ -1609,9 +1627,9 @@
       tabs.forEach(tabId => {
         const btn = document.getElementById(tabId);
         if (tabId === activeTabId) {
-          btn.className = "flex-1 py-1.5 px-3 rounded-lg text-xs font-bold transition-all bg-white text-clinic-700 shadow-sm border border-slate-200 text-center relative";
+          btn.className = "flex-1 py-1.5 px-3 rounded-lg text-xs font-bold transition-all bg-white text-clinic-700 shadow-sm border border-slate-200 text-center relative cursor-pointer";
         } else {
-          btn.className = "flex-1 py-1.5 px-3 rounded-lg text-xs font-semibold transition-all text-slate-600 hover:text-slate-900 border border-transparent text-center relative";
+          btn.className = "flex-1 py-1.5 px-3 rounded-lg text-xs font-semibold transition-all text-slate-600 hover:text-slate-900 border border-transparent text-center relative cursor-pointer";
         }
       });
     }
@@ -1639,12 +1657,12 @@
       document.getElementById('authSuccessMessage').classList.add('hidden');
 
       if (mode === 'login') {
-        tabLogin.className = "flex-1 py-2 rounded-lg bg-white text-clinic-700 shadow-sm transition-all";
-        tabRegister.className = "flex-1 py-2 rounded-lg text-slate-600 hover:text-slate-900 transition-all";
+        tabLogin.className = "flex-1 py-2 rounded-lg bg-white text-clinic-700 shadow-sm transition-all cursor-pointer";
+        tabRegister.className = "flex-1 py-2 rounded-lg text-slate-600 hover:text-slate-900 transition-all cursor-pointer";
         submitBtn.textContent = "دخول للعيادة";
       } else {
-        tabRegister.className = "flex-1 py-2 rounded-lg bg-white text-clinic-700 shadow-sm transition-all";
-        tabLogin.className = "flex-1 py-2 rounded-lg text-slate-600 hover:text-slate-900 transition-all";
+        tabRegister.className = "flex-1 py-2 rounded-lg bg-white text-clinic-700 shadow-sm transition-all cursor-pointer";
+        tabLogin.className = "flex-1 py-2 rounded-lg text-slate-600 hover:text-slate-900 transition-all cursor-pointer";
         submitBtn.textContent = "إنشاء حساب طبيب جديد";
       }
     }
@@ -1660,7 +1678,6 @@
       }
     }
 
-    // فتح واجهة استعادة كلمة المرور مع ملء البريد تلقائياً إن وجد
     function showForgotPasswordPrompt() {
       document.getElementById('doctorAuthForm').classList.add('hidden');
       document.getElementById('authTabsContainer').classList.add('hidden');
@@ -1684,7 +1701,6 @@
       document.getElementById('authModalHeaderDesc').textContent = 'تسجيل الدخول بالبريد الإلكتروني للوصول إلى لوحة المواعيد.';
     }
 
-    // إرسال رابط استعادة كلمة المرور الفعلي عبر Firebase Auth
     async function sendPasswordResetRequest() {
       const email = document.getElementById('doctorResetEmail').value.trim();
       const btn = document.getElementById('sendResetBtn');
@@ -1813,9 +1829,9 @@
       ['week', 'month', 'all'].forEach(t => {
         const btn = document.getElementById(`timeframe${t.charAt(0).toUpperCase() + t.slice(1)}Btn`);
         if (t === timeframe) {
-          btn.className = "px-2.5 py-1 rounded-lg bg-white text-clinic-700 shadow-sm transition-all";
+          btn.className = "px-2.5 py-1 rounded-lg bg-white text-clinic-700 shadow-sm transition-all cursor-pointer";
         } else {
-          btn.className = "px-2.5 py-1 rounded-lg text-slate-600 hover:text-slate-900 transition-all";
+          btn.className = "px-2.5 py-1 rounded-lg text-slate-600 hover:text-slate-900 transition-all cursor-pointer";
         }
       });
       calculateAndRenderAnalytics();
@@ -1963,7 +1979,6 @@
     // ==========================================
     window.addEventListener('DOMContentLoaded', () => {
       listenToClinicSettingsRealtime();
-      // استماع دائم للمواعيد لجميع الأجهزة (المرضى والطبيب) لتعطيل المواعيد المحجوزة فوراً
       listenToAppointmentsRealtime();
     });
   </script>
