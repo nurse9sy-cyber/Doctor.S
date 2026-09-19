@@ -99,11 +99,11 @@
 </head>
 <body class="min-h-screen text-slate-800 flex flex-col justify-between select-none pb-12">
 
-  <!-- Mobile-Optimized Top App Bar (خالي تماماً من أي زر دخول للطبيب لحماية خصوصية العيادة) -->
+  <!-- Mobile-Optimized Top App Bar -->
   <header class="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200/80 shadow-sm no-print">
     <div class="max-w-4xl mx-auto px-4 py-2.5 sm:py-3 flex items-center justify-between gap-3">
       
-      <!-- Clinic Brand & Info (مزامنة مباشرة من Firestore) -->
+      <!-- Clinic Brand & Info -->
       <div class="flex items-center gap-2.5 min-w-0">
         <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-clinic-600 to-teal-400 text-white flex items-center justify-center shadow-md shadow-clinic-500/20 text-lg flex-shrink-0">
           🦷
@@ -120,7 +120,7 @@
         </div>
       </div>
 
-      <!-- Doctor Controls Toolbar (يظهر فقط وفقط بعد تسجيل دخول الطبيب بنجاح) -->
+      <!-- Doctor Controls Toolbar -->
       <div class="flex items-center gap-1.5 flex-shrink-0">
         <div id="doctorAuthBar" class="hidden flex items-center gap-1 sm:gap-2">
           <!-- System Push Notification Permissions -->
@@ -148,7 +148,7 @@
 
     </div>
 
-    <!-- Doctor Sub-Tabs Navigation (تظهر حصرياً للطبيب بعد تسجيل الدخول) -->
+    <!-- Doctor Sub-Tabs Navigation -->
     <div id="doctorNavTabs" class="hidden border-t border-slate-100 bg-slate-50/80 px-4 py-1.5 no-print">
       <div class="max-w-4xl mx-auto flex items-center justify-center gap-2">
         <button id="tabDoctorLive" onclick="switchDoctorView('dashboard')" 
@@ -171,7 +171,7 @@
   <!-- Main Container -->
   <main class="max-w-4xl mx-auto px-3.5 sm:px-6 py-4 w-full flex-grow no-print">
 
-    <!-- Capacity & Schedule Alert Card (مشترك بين الواجهتين ومحدث لحظياً) -->
+    <!-- Capacity & Schedule Alert Card -->
     <section class="mb-4 bg-gradient-to-l from-slate-900 via-clinic-900 to-slate-900 text-white p-4 sm:p-5 rounded-2xl shadow-lg relative overflow-hidden">
       <div class="absolute -left-10 -bottom-10 w-36 h-36 bg-clinic-500/20 rounded-full blur-2xl"></div>
       
@@ -191,7 +191,7 @@
           </p>
         </div>
 
-        <!-- Seats Counter Box (متحكم به من خيار showRemainingSeatsToPatients في الإعدادات) -->
+        <!-- Seats Counter Box -->
         <div id="seatsCounterContainer" class="w-full sm:w-auto flex items-center justify-between sm:justify-end gap-3 bg-white/10 px-3 py-2 rounded-xl border border-white/10 transition-all">
           <div class="text-right">
             <div class="text-[10px] text-slate-300">المقاعد المتبقية لليوم</div>
@@ -208,9 +208,7 @@
       </div>
     </section>
 
-    <!-- ========================================================================= -->
-    <!-- PATIENT VIEW: VISIBLE ONLY TO PATIENTS (تختفي نهائياً عند تسجيل دخول الطبيب) -->
-    <!-- ========================================================================= -->
+    <!-- PATIENT VIEW -->
     <section id="viewPatient" class="space-y-4 transition-all duration-300">
       
       <!-- Booking Form Card -->
@@ -344,7 +342,6 @@
               </label>
               <select id="timeSlotSelect" required
                 class="w-full px-3 py-2 rounded-xl border border-slate-300 bg-white focus:outline-none focus:ring-2 focus:ring-clinic-500 text-xs font-bold">
-                <!-- يتم توليدها آلياً استناداً لساعات دوام الطبيب -->
               </select>
               <p class="text-[10px] text-slate-500 mt-1">المواعيد تتولد آلياً استناداً لدوام العيادة.</p>
             </div>
@@ -377,7 +374,7 @@
         </form>
       </div>
 
-      <!-- Clinic Information Card (تحديث مباشر من إعدادات الطبيب) -->
+      <!-- Clinic Information Card -->
       <div class="bg-white rounded-2xl p-4 border border-slate-200/90 shadow-sm space-y-3">
         <h3 class="text-xs font-bold text-slate-900 flex items-center gap-2">
           <span class="text-clinic-600">📍</span> بيانات العيادة وموقع الاستقبال
@@ -425,9 +422,7 @@
 
     </section>
 
-    <!-- ========================================================================= -->
-    <!-- DOCTOR VIEW: LIVE DASHBOARD (يظهر مباشرة وحصرياً للطبيب فور تسجيل الدخول) -->
-    <!-- ========================================================================= -->
+    <!-- DOCTOR VIEW: LIVE DASHBOARD -->
     <section id="viewDoctorDashboard" class="hidden space-y-4">
       
       <!-- Doctor Top Action Bar -->
@@ -459,7 +454,7 @@
         </div>
       </div>
 
-      <!-- Incoming Booking Alert Banner (رنين صوتي وتنبيه بصري) -->
+      <!-- Incoming Booking Alert Banner -->
       <div id="doctorIncomingNotification" class="hidden bg-gradient-to-r from-teal-600 to-clinic-700 text-white p-3.5 rounded-2xl shadow-lg flex items-center justify-between gap-3 animate-pulse">
         <div class="flex items-center gap-2.5 min-w-0">
           <div class="w-8 h-8 rounded-xl bg-white/20 flex items-center justify-center text-lg flex-shrink-0">
@@ -530,14 +525,12 @@
               </tr>
             </thead>
             <tbody id="appointmentsTableBody" class="divide-y divide-slate-100 text-slate-700">
-              <!-- يتم ملؤها ديناميكياً -->
             </tbody>
           </table>
         </div>
 
         <!-- Mobile Adaptive Cards List -->
         <div id="appointmentsMobileList" class="sm:hidden divide-y divide-slate-100 p-2 space-y-2">
-          <!-- بطاقات ذكية للشاشات الصغيرة -->
         </div>
 
         <!-- Empty State -->
@@ -550,9 +543,7 @@
 
     </section>
 
-    <!-- ========================================================================= -->
-    <!-- DOCTOR VIEW: ANALYTICS & PDF (ظاهر فقط للطبيب بعد المصادقة) -->
-    <!-- ========================================================================= -->
+    <!-- DOCTOR VIEW: ANALYTICS & PDF -->
     <section id="viewDoctorAnalytics" class="hidden space-y-4">
       
       <!-- Analytics Header -->
@@ -648,14 +639,14 @@
 
   </main>
 
-  <!-- FOOTER (يتضمن الرابط السري الهادئ المخصص لدخول الطبيب بعيداً عن أعين المرضى) -->
+  <!-- FOOTER -->
   <footer class="mt-8 border-t border-slate-200/80 bg-white py-4 px-4 text-center no-print">
     <div class="max-w-4xl mx-auto flex items-center justify-between text-[11px] text-slate-400">
       <div>
         جميع الحقوق محفوظة © <span id="footerClinicName">عيادة طب الأسنان</span>
       </div>
       
-      <!-- زر تسجيل دخول الطبيب السري في أسفل الصفحة فقط -->
+      <!-- زر تسجيل دخول الطبيب السري في أسفل الصفحة -->
       <div id="footerDoctorAccessContainer">
         <button id="footerDoctorLoginBtn" onclick="openDoctorAuthModal()" 
           class="text-slate-400 hover:text-clinic-700 transition-all font-semibold flex items-center gap-1">
@@ -748,9 +739,7 @@
     </div>
   </div>
 
-  <!-- ========================================================================= -->
-  <!-- MODAL: DOCTOR AUTHENTICATION & FORGOT PASSWORD (تسجيل الدخول / استعادة كلمة المرور) -->
-  <!-- ========================================================================= -->
+  <!-- MODAL: DOCTOR AUTHENTICATION & FORGOT PASSWORD -->
   <div id="doctorAuthModal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 no-print">
     <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-slate-100 space-y-4">
       
@@ -780,7 +769,7 @@
             class="w-full px-3 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-clinic-500 font-semibold text-slate-800">
         </div>
 
-        <!-- Password Field with Show/Hide Toggle (نصي نظيف خالي من أيقونات العيون) -->
+        <!-- Password Field with Show/Hide Toggle -->
         <div id="authPasswordGroup">
           <div class="flex items-center justify-between mb-1">
             <label class="block font-bold text-slate-700" for="doctorAuthPassword">كلمة المرور</label>
@@ -817,14 +806,22 @@
         </div>
       </form>
 
-      <!-- Forgot Password View (مخفي افتراضياً ويظهر عند الضغط على نسيت كلمة المرور) -->
+      <!-- Forgot Password View (المعدلة والمزودة بحقل إدخال بريد مستقل لضمان عملها بشكل مباشر ومثالي) -->
       <div id="forgotPasswordView" class="hidden space-y-3 text-xs">
+        <div>
+          <label class="block font-bold text-slate-700 mb-1" for="doctorResetEmail">البريد الإلكتروني للعيادة</label>
+          <input type="email" id="doctorResetEmail" required placeholder="saed30saed@gmail.com" dir="ltr"
+            class="w-full px-3 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-clinic-500 font-semibold text-slate-800">
+        </div>
+
         <p class="text-[11px] text-slate-500 leading-relaxed">
-          أدخل بريدك الإلكتروني في الحقل أعلاه وسيقوم النظام بإرسال رابط مباشر لتعيين كلمة مرور جديدة لحسابك.
+          أدخل بريدك الإلكتروني المسجل وسيقوم نظام فايرباس بإرسال رابط رسمي مباشر لتعيين كلمة مرور جديدة لحسابك.
         </p>
-        <button type="button" onclick="sendPasswordResetRequest()" class="w-full py-2.5 bg-clinic-600 hover:bg-clinic-700 text-white font-bold rounded-xl transition-all shadow-md">
+
+        <button type="button" id="sendResetBtn" onclick="sendPasswordResetRequest()" class="w-full py-2.5 bg-clinic-600 hover:bg-clinic-700 text-white font-bold rounded-xl transition-all shadow-md">
           إرسال رابط تعيين كلمة المرور
         </button>
+        
         <button type="button" onclick="backToLoginFromForgot()" class="w-full py-2 text-center text-slate-500 hover:text-slate-800 font-semibold">
           ← العودة لتسجيل الدخول
         </button>
@@ -833,9 +830,7 @@
     </div>
   </div>
 
-  <!-- ========================================================================= -->
-  <!-- MODAL: CLINIC SETTINGS (إعدادات العيادة مع خيار إخفاء/إظهار المقاعد) -->
-  <!-- ========================================================================= -->
+  <!-- MODAL: CLINIC SETTINGS -->
   <div id="clinicSettingsModal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 no-print">
     <div class="bg-white rounded-3xl max-w-lg w-full p-5 sm:p-6 shadow-2xl border border-slate-100 space-y-4 max-h-[92vh] overflow-y-auto custom-scrollbar">
       
@@ -1031,7 +1026,6 @@
     let settingsUnsubscribe = null;
     let isInitialLoad = true;
 
-    // خريطة أيام الأسبوع
     const dayNamesAr = {
       sat: "السبت",
       sun: "الأحد",
@@ -1050,30 +1044,23 @@
         currentDoctorUser = user;
         if (user) {
           // الطبيب مسجل دخوله:
-          // 1. إخفاء واجهة المريض تماماً حتى لا تظهر
           document.getElementById('viewPatient').classList.add('hidden');
-          // 2. إظهار لوحة تحكم الطبيب فوراً
           document.getElementById('viewDoctorDashboard').classList.remove('hidden');
           document.getElementById('viewDoctorAnalytics').classList.add('hidden');
-          // 3. إظهار شريط أدوات الطبيب وتبويباته
           document.getElementById('doctorAuthBar').classList.remove('hidden');
           document.getElementById('doctorNavTabs').classList.remove('hidden');
-          // 4. إخفاء زر الدخول السري في الأسفل
           document.getElementById('footerDoctorLoginBtn').classList.add('hidden');
           document.getElementById('doctorLoggedInEmail').textContent = user.email;
           
           setTabActiveVisual('tabDoctorLive');
           listenToAppointmentsRealtime();
         } else {
-          // المريض في الواجهة (وضع عدم تسجيل الدخول):
-          // 1. إظهار واجهة المريض فقط
+          // وضع عدم تسجيل الدخول:
           document.getElementById('viewPatient').classList.remove('hidden');
-          // 2. إخفاء كافة لوحات وأدوات الطبيب
           document.getElementById('viewDoctorDashboard').classList.add('hidden');
           document.getElementById('viewDoctorAnalytics').classList.add('hidden');
           document.getElementById('doctorAuthBar').classList.add('hidden');
           document.getElementById('doctorNavTabs').classList.add('hidden');
-          // 3. إظهار زر الدخول السري في الأسفل
           document.getElementById('footerDoctorLoginBtn').classList.remove('hidden');
           
           if (appointmentsUnsubscribe) {
@@ -1100,7 +1087,6 @@
             clinicConfig = { ...clinicConfig, ...data };
             applySettingsToUI(clinicConfig);
           } else {
-            // إنشاء الإعدادات الافتراضية
             db.collection('clinic_settings').doc('config').set(clinicConfig).catch(console.error);
             applySettingsToUI(clinicConfig);
           }
@@ -1110,7 +1096,6 @@
         });
     }
 
-    // تطبيق الإعدادات المحدثة على واجهات المرضى والطبيب فوراً
     function applySettingsToUI(cfg) {
       const fullTitle = `${cfg.doctorGender} ${cfg.doctorName}`;
       document.getElementById('navClinicTitle').textContent = `عيادة ${fullTitle}`;
@@ -1118,12 +1103,10 @@
       document.getElementById('bannerDoctorName').textContent = `عيادة ${fullTitle} - ${cfg.specialty}`;
       document.getElementById('footerClinicName').textContent = `عيادة ${fullTitle}`;
 
-      // أوقات الدوام
       document.getElementById('bannerStartTime').textContent = cfg.startHour;
       document.getElementById('bannerEndTime').textContent = cfg.endHour;
       document.getElementById('cardWorkHours').textContent = `${cfg.startHour} - ${cfg.endHour}`;
 
-      // أيام العمل
       const daysText = cfg.workDays.map(d => dayNamesAr[d]).join('، ');
       document.getElementById('bannerDays').textContent = daysText;
       document.getElementById('cardWorkDays').textContent = daysText;
@@ -1132,14 +1115,10 @@
         ${daysText} (${cfg.startHour} - ${cfg.endHour})
       `;
 
-      // العنوان والهاتف
       document.getElementById('cardAddress').textContent = cfg.address;
       document.getElementById('cardPhone').textContent = cfg.phone;
-
-      // الطاقة الاستيعابية
       document.getElementById('maxCapacityDisplay').textContent = cfg.maxDailyCapacity;
 
-      // خيار إظهار أو إخفاء عدد المقاعد للمرضى
       const seatsContainer = document.getElementById('seatsCounterContainer');
       if (cfg.showRemainingSeatsToPatients === false && !currentDoctorUser) {
         seatsContainer.classList.add('hidden');
@@ -1147,12 +1126,10 @@
         seatsContainer.classList.remove('hidden');
       }
 
-      // توليد المواعيد في قائمة المريض تلقائياً
       generateTimeSlots(cfg.startHour, cfg.endHour, cfg.slotDuration);
       recalculateCapacity();
     }
 
-    // توليد خانات المواعيد الزمنية آلياً
     function generateTimeSlots(start, end, duration) {
       const select = document.getElementById('timeSlotSelect');
       if (!select) return;
@@ -1202,13 +1179,11 @@
           snapshot.forEach(doc => {
             const data = doc.data();
             data.id = doc.id;
-            // تصفية حجوزات اليوم فقط
             if (!data.date || data.date === todayStr) {
               updated.push(data);
             }
           });
 
-          // التنبيه الصوتي والنظامي عند وصول حجز جديد
           if (!isInitialLoad && snapshot.docChanges) {
             snapshot.docChanges().forEach((change) => {
               if (change.type === 'added') {
@@ -1229,13 +1204,11 @@
         });
     }
 
-    // حساب المقاعد المتبقية وتحديث المؤشرات وحالة الإقفال
     function recalculateCapacity() {
       const bookedSeats = todayAppointments.reduce((sum, item) => sum + (Number(item.partySize) || 1), 0);
       const maxCap = Number(clinicConfig.maxDailyCapacity) || 15;
       const seatsLeft = Math.max(0, maxCap - bookedSeats);
 
-      // تحديث الشاشات
       document.getElementById('remainingSeatsBadge').textContent = seatsLeft;
       document.getElementById('metricSeatsLeft').textContent = seatsLeft;
       document.getElementById('metricTotalPatients').textContent = todayAppointments.length;
@@ -1245,12 +1218,10 @@
       document.getElementById('metricNewPatients').textContent = newCount;
       document.getElementById('metricFollowupPatients').textContent = followCount;
 
-      // شريط التقدم
       const percent = Math.min(100, Math.round((seatsLeft / maxCap) * 100));
       const progressBar = document.getElementById('capacityProgressBar');
       progressBar.style.width = `${percent}%`;
 
-      // حالة الحجز في الترويسة وزر التأكيد
       const statusPill = document.getElementById('bookingStatusPill');
       const submitBtn = document.getElementById('submitBookingBtn');
 
@@ -1281,7 +1252,7 @@
     }
 
     // ==========================================
-    // 5. حجز المريض وإرساله للسحابة
+    // 5. حجز المريض
     // ==========================================
     async function handlePatientBooking(event) {
       event.preventDefault();
@@ -1296,7 +1267,6 @@
       const notes = document.getElementById('patientNotes').value.trim();
       const todayStr = new Date().toISOString().split('T')[0];
 
-      // تحقق المقاعد
       const bookedSeats = todayAppointments.reduce((sum, item) => sum + (Number(item.partySize) || 1), 0);
       const maxCap = Number(clinicConfig.maxDailyCapacity) || 15;
       if (bookedSeats + partySize > maxCap) {
@@ -1324,7 +1294,6 @@
         if (db) {
           await db.collection('appointments').add(bookingRecord);
         } else {
-          // وضع غير متصل
           bookingRecord.id = 'local_' + Date.now();
           todayAppointments.push(bookingRecord);
           renderAppointmentsTable();
@@ -1343,7 +1312,6 @@
       }
     }
 
-    // اختيار الخدمة الطبية
     function selectDentalService(serviceName, buttonEl) {
       document.getElementById('selectedServiceInput').value = serviceName;
       document.querySelectorAll('.service-card').forEach(btn => {
@@ -1359,7 +1327,7 @@
     }
 
     // ==========================================
-    // 6. عرض جدول الحجوزات في شاشة الطبيب
+    // 6. جدول الحجوزات
     // ==========================================
     let currentFilter = 'all';
 
@@ -1489,7 +1457,7 @@
     }
 
     // ==========================================
-    // 7. نظام الإشعارات (صوتي + تنبيه نظام التشغيل)
+    // 7. الإشعارات
     // ==========================================
     function triggerChimeSound() {
       if (!isSoundEnabled) return;
@@ -1497,11 +1465,10 @@
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         const now = audioCtx.currentTime;
         
-        // Tone 1
         const osc1 = audioCtx.createOscillator();
         const gain1 = audioCtx.createGain();
         osc1.type = 'sine';
-        osc1.frequency.setValueAtTime(587.33, now); // D5
+        osc1.frequency.setValueAtTime(587.33, now);
         gain1.gain.setValueAtTime(0.3, now);
         gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
         osc1.connect(gain1);
@@ -1509,11 +1476,10 @@
         osc1.start(now);
         osc1.stop(now + 0.5);
 
-        // Tone 2
         const osc2 = audioCtx.createOscillator();
         const gain2 = audioCtx.createGain();
         osc2.type = 'sine';
-        osc2.frequency.setValueAtTime(880, now + 0.15); // A5
+        osc2.frequency.setValueAtTime(880, now + 0.15);
         gain2.gain.setValueAtTime(0.35, now + 0.15);
         gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.8);
         osc2.connect(gain2);
@@ -1592,7 +1558,7 @@
     }
 
     // ==========================================
-    // 9. بوابة تسجيل الطبيب / نسيت كلمة المرور / إظهار كلمة المرور
+    // 9. بوابة تسجيل الطبيب / استعادة كلمة المرور
     // ==========================================
     function openDoctorAuthModal() {
       document.getElementById('doctorAuthModal').classList.remove('hidden');
@@ -1624,7 +1590,6 @@
       }
     }
 
-    // تبديل إظهار / إخفاء كلمة المرور بنص نقي خالي من أيقونات الأعين
     function togglePasswordVisibility(inputId, btn) {
       const input = document.getElementById(inputId);
       if (input.type === 'password') {
@@ -1636,13 +1601,20 @@
       }
     }
 
-    // معالجة نسيان كلمة المرور
+    // فتح واجهة استعادة كلمة المرور مع ملء البريد تلقائياً إن وجد
     function showForgotPasswordPrompt() {
       document.getElementById('doctorAuthForm').classList.add('hidden');
       document.getElementById('authTabsContainer').classList.add('hidden');
       document.getElementById('forgotPasswordView').classList.remove('hidden');
       document.getElementById('authModalHeaderTitle').textContent = 'استعادة كلمة المرور';
       document.getElementById('authModalHeaderDesc').textContent = 'أدخل بريدك الإلكتروني لإرسال رابط الاستعادة.';
+
+      const existingEmail = document.getElementById('doctorAuthEmail').value.trim();
+      const resetInput = document.getElementById('doctorResetEmail');
+      if (existingEmail) {
+        resetInput.value = existingEmail;
+      }
+      resetInput.focus();
     }
 
     function backToLoginFromForgot() {
@@ -1653,18 +1625,30 @@
       document.getElementById('authModalHeaderDesc').textContent = 'تسجيل الدخول بالبريد الإلكتروني للوصول إلى لوحة المواعيد.';
     }
 
+    // إرسال رابط استعادة كلمة المرور الفعلي عبر Firebase Auth
     async function sendPasswordResetRequest() {
-      const email = document.getElementById('doctorAuthEmail').value.trim();
+      const email = document.getElementById('doctorResetEmail').value.trim();
+      const btn = document.getElementById('sendResetBtn');
+
       if (!email) {
         alert("يرجى كتابة البريد الإلكتروني أولاً في الحقل المخصص.");
+        document.getElementById('doctorResetEmail').focus();
         return;
       }
+
+      btn.disabled = true;
+      btn.textContent = "جاري الإرسال...";
+
       try {
+        if (!auth) throw new Error("نظام المصادقة غير متصل بالسحابة حالياً.");
         await auth.sendPasswordResetEmail(email);
-        alert(`تم إرسال رابط استعادة كلمة المرور إلى البريد: ${email}\nيرجى مراجعة صندوق الوارد لديك.`);
+        alert(`تم إرسال رابط تعيين كلمة المرور بنجاح إلى:\n${email}\n\nيرجى مراجعة صندوق الوارد لديك (أو مجلد الرسائل غير المرغوب فيها Spam).`);
         backToLoginFromForgot();
       } catch (err) {
-        alert("تعذر إرسال الرابط: " + (err.message || "تأكد من صحة البريد الإلكتروني"));
+        alert("تعذر إرسال الرابط: " + (err.message || "تأكد من صحة البريد الإلكتروني المسجل"));
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "إرسال رابط تعيين كلمة المرور";
       }
     }
 
@@ -1714,7 +1698,6 @@
       document.getElementById('settingPhone').value = clinicConfig.phone || "0991234567";
       document.getElementById('settingShowRemainingSeats').checked = clinicConfig.showRemainingSeatsToPatients !== false;
 
-      // أيام العمل
       document.querySelectorAll('input[name="workDaySetting"]').forEach(cb => {
         cb.checked = (clinicConfig.workDays || []).includes(cb.value);
       });
@@ -1796,7 +1779,6 @@
       const capRate = Math.min(100, Math.round((bookedSeats / (Number(clinicConfig.maxDailyCapacity) || 15)) * 100));
       document.getElementById('analyticsUtilizationRate').textContent = `${capRate}%`;
 
-      // توزيع الخدمات
       const servicesMap = {};
       data.forEach(item => {
         servicesMap[item.service] = (servicesMap[item.service] || 0) + 1;
@@ -1824,7 +1806,6 @@
         }).join('');
       }
 
-      // توزيع الأيام
       const daysContainer = document.getElementById('daysBarsContainer');
       const daysOrder = ['السبت', 'الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس'];
       daysContainer.innerHTML = daysOrder.map(day => `
@@ -1885,7 +1866,6 @@
       document.getElementById('pdfFollowupPatients').textContent = followCount;
       document.getElementById('pdfUtilization').textContent = document.getElementById('analyticsUtilizationRate').textContent;
 
-      // Patients table
       document.getElementById('pdfPatientsTableBody').innerHTML = data.map((item, idx) => `
         <tr style="border-bottom: 1px solid #f1f5f9;">
           <td style="padding: 4px 6px;">${item.date || 'اليوم'}</td>
