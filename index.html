@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>حجز موعد - عيادة طب الأسنان</title>
+  <title id="pageBrowserTitle">حجز موعد - عيادة طب الأسنان</title>
   
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -103,19 +103,19 @@
   <header class="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200/80 shadow-sm no-print">
     <div class="max-w-4xl mx-auto px-4 py-2.5 sm:py-3 flex items-center justify-between gap-3">
       
-      <!-- Clinic Brand & Info -->
+      <!-- Clinic Brand & Info (خالي من الأسماء الثابتة ويتحدث ديناميكياً) -->
       <div class="flex items-center gap-2.5 min-w-0">
         <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-clinic-600 to-teal-400 text-white flex items-center justify-center shadow-md shadow-clinic-500/20 text-lg flex-shrink-0">
           🦷
         </div>
         <div class="truncate">
           <div class="flex items-center gap-1.5 truncate">
-            <h1 class="text-sm sm:text-base font-extrabold text-slate-900 truncate" id="navClinicTitle">عيادة د. سعيد</h1>
+            <h1 class="text-sm sm:text-base font-extrabold text-slate-900 truncate" id="navClinicTitle">عيادة طب وجراحة الأسنان</h1>
             <span class="text-[9px] sm:text-[10px] bg-clinic-100 text-clinic-800 px-1.5 py-0.5 rounded-full font-bold flex-shrink-0" id="navDoctorGenderBadge">عيادة معتمدة</span>
           </div>
           <p class="text-[10px] sm:text-xs text-slate-500 flex items-center gap-1 font-medium truncate mt-0.5" id="navWorkingHoursSummary">
             <span class="inline-block w-1.5 h-1.5 rounded-full bg-emerald-500 flex-shrink-0"></span>
-            الدوام: السبت - الخميس (12:00 - 18:00)
+            جاري مزامنة ساعات الدوام...
           </p>
         </div>
       </div>
@@ -183,25 +183,25 @@
               <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
               الحجز متاح الآن
             </span>
-            <span class="text-[11px] text-slate-300 font-bold" id="bannerDoctorName">عيادة د. سعيد</span>
+            <span class="text-[11px] text-slate-300 font-bold" id="bannerDoctorName">عيادة طب وجراحة الأسنان</span>
           </div>
 
           <!-- Custom Schedule Notes & Working Days -->
           <div class="text-xs text-slate-200 leading-snug space-y-1">
             <p class="text-teal-300 font-bold flex items-start sm:items-center gap-1.5">
               <span class="flex-shrink-0">⏰</span>
-              <span id="bannerScheduleNotesText">الدوام: من الساعة 12:00 ظهراً إلى 18:00 مساءً</span>
+              <span id="bannerScheduleNotesText">جاري تحميل مواعيد وأوقات الدوام...</span>
             </p>
             <p class="text-[11px] text-slate-300 flex items-center gap-1.5">
               <span>📅</span>
               <span>أيام الدوام: <strong class="text-teal-300" id="bannerDays">السبت إلى الخميس</strong></span>
             </p>
-            <!-- Clinic Location & Phone integrated into banner -->
-            <p class="text-[11px] text-slate-300 flex items-center gap-1.5 flex-wrap">
+            <!-- Clinic Location & Phone -->
+            <p class="text-[11px] text-slate-300 flex items-center gap-1.5 flex-wrap" id="bannerLocationPhoneRow">
               <span>📍</span>
-              <span>الموقع: <strong class="text-teal-200 font-bold" id="bannerLocationText">حلب - شارع فيصل</strong></span>
+              <span>الموقع: <strong class="text-teal-200 font-bold" id="bannerLocationText">المقر المعتمد للعيادة</strong></span>
               <span class="text-slate-500">|</span>
-              <span>هاتف: <strong class="text-teal-200 font-bold" dir="ltr" id="bannerPhoneText">0991234567</strong></span>
+              <span>هاتف: <strong class="text-teal-200 font-bold" dir="ltr" id="bannerPhoneText">---</strong></span>
             </p>
           </div>
         </div>
@@ -211,8 +211,8 @@
           <div class="text-right">
             <div class="text-[10px] text-slate-300">المقاعد المتبقية لليوم</div>
             <div class="flex items-baseline gap-1">
-              <span id="remainingSeatsBadge" class="text-2xl font-black text-teal-300 leading-none">15</span>
-              <span class="text-[10px] text-slate-400">/ <span id="maxCapacityDisplay">15</span></span>
+              <span id="remainingSeatsBadge" class="text-2xl font-black text-teal-300 leading-none">--</span>
+              <span class="text-[10px] text-slate-400">/ <span id="maxCapacityDisplay">--</span></span>
             </div>
           </div>
           <div class="w-24 bg-slate-700/60 rounded-full h-2 overflow-hidden">
@@ -293,7 +293,7 @@
                 <div class="text-[9px] text-slate-500">تشخيص وتسكين الألم</div>
               </button>
 
-              <button type="button" onclick="selectDentalService('علاج عصب وححشوات تجميلية', this)"
+              <button type="button" onclick="selectDentalService('علاج عصب وحشوات تجميلية', this)"
                 class="service-card p-2.5 rounded-xl border border-slate-200 bg-white text-slate-700 text-right transition-all cursor-pointer">
                 <div class="text-base">🦷</div>
                 <div class="text-xs font-bold mt-0.5">حشوات وعلاج عصب</div>
@@ -458,7 +458,7 @@
 
         <div class="bg-white p-3 rounded-2xl border border-slate-200/80 shadow-sm text-center">
           <div class="text-[10px] font-bold text-slate-400">المقاعد الشاغرة</div>
-          <div id="metricSeatsLeft" class="text-xl font-black text-emerald-600 mt-0.5">15</div>
+          <div id="metricSeatsLeft" class="text-xl font-black text-emerald-600 mt-0.5">--</div>
         </div>
       </div>
 
@@ -630,13 +630,13 @@
   <div id="printablePdfReport" class="hidden">
     <div style="border-bottom: 2.5px solid #0d9488; padding-bottom: 14px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: flex-start;">
       <div>
-        <h1 style="font-size: 22px; font-weight: 800; color: #0f766e; margin: 0;" id="pdfDoctorName">عيادة د. سعيد</h1>
+        <h1 style="font-size: 22px; font-weight: 800; color: #0f766e; margin: 0;" id="pdfDoctorName">عيادة طب وجراحة الأسنان</h1>
         <p style="font-size: 12px; color: #475569; margin: 3px 0;" id="pdfSpecialty">جراحة وزراعة وتجميل الأسنان</p>
-        <p style="font-size: 11px; color: #64748b; margin: 0;" id="pdfClinicInfo">المقر: حلب - شارع فيصل | هاتف: 0991234567</p>
+        <p style="font-size: 11px; color: #64748b; margin: 0;" id="pdfClinicInfo">المقر: --- | هاتف: ---</p>
       </div>
       <div style="text-align: left; font-size: 11px; color: #334155;">
         <div style="font-weight: bold; font-size: 14px; color: #0f766e;">تقرير العيادة الرسمي للإحصائيات والحجوزات</div>
-        <div>تاريخ التقرير: <span id="pdfPrintDate">2026-09-19</span></div>
+        <div>تاريخ التقرير: <span id="pdfPrintDate">2026-09-20</span></div>
         <div>نطاق الفترة: <span id="pdfPeriodLabel">الأسبوع الحالي</span></div>
       </div>
     </div>
@@ -823,7 +823,7 @@
           </div>
           <div class="col-span-2">
             <label class="block font-bold text-slate-700 mb-1">اسم الطبيب/ة الكامل *</label>
-            <input type="text" id="settingDoctorName" required placeholder="مثال: سعيد"
+            <input type="text" id="settingDoctorName" required placeholder="مثال: عبد الرحمن شعبان"
               class="w-full px-3 py-2 rounded-xl border border-slate-300 font-bold">
           </div>
         </div>
@@ -839,13 +839,13 @@
         <div class="grid grid-cols-2 gap-2.5">
           <div>
             <label class="block font-bold text-slate-700 mb-1">ساعة بدء الدوام (لتوليد الخانات)</label>
-            <input type="time" id="settingStartHour" required value="12:00"
+            <input type="time" id="settingStartHour" required value="10:30"
               class="w-full px-3 py-2 rounded-xl border border-slate-300 font-bold">
           </div>
 
           <div>
             <label class="block font-bold text-slate-700 mb-1">ساعة انتهاء الدوام</label>
-            <input type="time" id="settingEndHour" required value="18:00"
+            <input type="time" id="settingEndHour" required value="20:30"
               class="w-full px-3 py-2 rounded-xl border border-slate-300 font-bold">
           </div>
         </div>
@@ -934,12 +934,12 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
           <div>
             <label class="block font-bold text-slate-700 mb-1">عنوان العيادة</label>
-            <input type="text" id="settingAddress" required placeholder="حلب - شارع فيصل"
+            <input type="text" id="settingAddress" required placeholder="أدخل عنوان وموقع العيادة"
               class="w-full px-3 py-2 rounded-xl border border-slate-300">
           </div>
           <div>
             <label class="block font-bold text-slate-700 mb-1">هاتف العيادة</label>
-            <input type="tel" id="settingPhone" required placeholder="0991234567" dir="ltr"
+            <input type="tel" id="settingPhone" required placeholder="09xxxxxxxx" dir="ltr"
               class="w-full px-3 py-2 rounded-xl border border-slate-300 text-right">
           </div>
         </div>
@@ -987,22 +987,31 @@
       console.warn("تعذر الاتصال بـ Firebase:", err);
     }
 
-    // الحالة العامة للنظام (Default State)
-    let clinicConfig = {
+    // الحالة الافتراضية المحايدة تماماً (خالية من أي اسم أو موقع مسبق لتجنب الوميض)
+    const defaultClinicConfig = {
       doctorGender: "د.",
-      doctorName: "سعيد",
-      specialty: "جراحة وزراعة وتجميل الأسنان",
-      startHour: "12:00",
-      endHour: "18:00",
-      scheduleNotes: "من الساعة 9:00 صباحاً إلى 3:00 بعد الظهر، ومن الساعة 6:00 مساءً إلى 9:00 ليلاً",
+      doctorName: "",
+      specialty: "طب وجراحة وتجميل الأسنان",
+      startHour: "10:30",
+      endHour: "20:30",
+      scheduleNotes: "",
       workDays: ["sat", "sun", "mon", "tue", "wed", "thu"],
       maxDailyCapacity: 15,
       slotDuration: 45,
       showRemainingSeatsToPatients: true,
-      address: "حلب - شارع فيصل",
-      phone: "0991234567",
+      address: "",
+      phone: "",
       clinicManuallyClosed: false
     };
+
+    // القراءة الفورية من ذاكرة التخزين المحلية للمتصفح (Instant Cache) لمنع أي وميض
+    let clinicConfig = { ...defaultClinicConfig };
+    try {
+      const stored = localStorage.getItem('clinic_profile_cache');
+      if (stored) {
+        clinicConfig = { ...defaultClinicConfig, ...JSON.parse(stored) };
+      }
+    } catch (e) {}
 
     let todayAppointments = [];
     let currentDoctorUser = null;
@@ -1021,6 +1030,9 @@
       thu: "الخميس",
       fri: "الجمعة"
     };
+
+    // تطبيق الإعدادات الفورية من الذاكرة المحلية قبل بدء الاتصال بالإنترنت
+    applySettingsToUI(clinicConfig);
 
     // ==========================================
     // 2. إدارة جلسة الطبيب (Authentication Listener)
@@ -1067,9 +1079,13 @@
           if (doc.exists) {
             const data = doc.data();
             clinicConfig = { ...clinicConfig, ...data };
+            // حفظ في ذاكرة التخزين المحلية للمتصفح
+            try {
+              localStorage.setItem('clinic_profile_cache', JSON.stringify(clinicConfig));
+            } catch(e) {}
             applySettingsToUI(clinicConfig);
           } else {
-            db.collection('clinic_settings').doc('config').set(clinicConfig).catch(console.error);
+            // مستند جديد فارغ
             applySettingsToUI(clinicConfig);
           }
         }, (error) => {
@@ -1079,11 +1095,16 @@
     }
 
     function applySettingsToUI(cfg) {
-      const fullTitle = `${cfg.doctorGender} ${cfg.doctorName}`;
-      document.getElementById('navClinicTitle').textContent = `عيادة ${fullTitle}`;
+      const docName = (cfg.doctorName && cfg.doctorName.trim() !== "") ? cfg.doctorName.trim() : "";
+      const docTitle = (cfg.doctorGender || "د.");
+      const fullDoctorDisplay = docName ? `${docTitle} ${docName}` : "طب وجراحة الأسنان";
+
+      // ترويسة المتصفح والشريط العلوي
+      document.getElementById('pageBrowserTitle').textContent = `حجز موعد - عيادة ${fullDoctorDisplay}`;
+      document.getElementById('navClinicTitle').textContent = `عيادة ${fullDoctorDisplay}`;
       document.getElementById('navDoctorGenderBadge').textContent = cfg.doctorGender === 'دكتورة' ? 'طبيبة أسنان' : 'طبيب أسنان';
-      document.getElementById('bannerDoctorName').textContent = `عيادة ${fullTitle} - ${cfg.specialty}`;
-      document.getElementById('footerClinicName').textContent = `عيادة ${fullTitle}`;
+      document.getElementById('bannerDoctorName').textContent = `عيادة ${fullDoctorDisplay} - ${cfg.specialty || "جراحة وزراعة وتجميل الأسنان"}`;
+      document.getElementById('footerClinicName').textContent = `عيادة ${fullDoctorDisplay}`;
 
       // أوقات وملاحظات الدوام
       const bannerScheduleNotes = document.getElementById('bannerScheduleNotesText');
@@ -1091,22 +1112,26 @@
         if (cfg.scheduleNotes && cfg.scheduleNotes.trim() !== "") {
           bannerScheduleNotes.textContent = cfg.scheduleNotes.trim();
         } else {
-          bannerScheduleNotes.textContent = `الدوام: من الساعة ${cfg.startHour} إلى ${cfg.endHour}`;
+          bannerScheduleNotes.textContent = `الدوام: من الساعة ${cfg.startHour || "10:30"} إلى ${cfg.endHour || "20:30"}`;
         }
       }
 
-      // العنوان والهاتف في شريط التنبيه العلوي
+      // العنوان والهاتف
       const bannerLocation = document.getElementById('bannerLocationText');
-      if (bannerLocation) bannerLocation.textContent = cfg.address || "حلب - شارع فيصل";
+      if (bannerLocation) {
+        bannerLocation.textContent = (cfg.address && cfg.address.trim() !== "") ? cfg.address : "المقر المعتمد للعيادة";
+      }
 
       const bannerPhone = document.getElementById('bannerPhoneText');
-      if (bannerPhone) bannerPhone.textContent = cfg.phone || "0991234567";
+      if (bannerPhone) {
+        bannerPhone.textContent = (cfg.phone && cfg.phone.trim() !== "") ? cfg.phone : "---";
+      }
 
       const daysText = (cfg.workDays || []).map(d => dayNamesAr[d]).join('، ');
-      document.getElementById('bannerDays').textContent = daysText;
+      document.getElementById('bannerDays').textContent = daysText || "السبت إلى الخميس";
       document.getElementById('navWorkingHoursSummary').innerHTML = `
         <span class="inline-block w-1.5 h-1.5 rounded-full bg-emerald-500 flex-shrink-0"></span>
-        الدوام: ${daysText} (${cfg.startHour} - ${cfg.endHour})
+        الدوام: ${daysText || "طوال الأسبوع"} (${cfg.startHour || "10:30"} - ${cfg.endHour || "20:30"})
       `;
 
       // الطاقة الاستيعابية القصوى
@@ -1141,11 +1166,10 @@
       const currentSelected = select.value;
       select.innerHTML = '';
 
-      // جمع كافة المواعيد التي تم حجزها مسبقاً لليوم مع توحيد التنسيق
       const bookedCleanSlots = todayAppointments.map(a => cleanSlotString(a.timeSlot));
 
-      let [startH, startM] = (start || "12:00").split(':').map(Number);
-      let [endH, endM] = (end || "18:00").split(':').map(Number);
+      let [startH, startM] = (start || "10:30").split(':').map(Number);
+      let [endH, endM] = (end || "20:30").split(':').map(Number);
 
       let currentTotal = startH * 60 + startM;
       const endTotal = endH * 60 + endM;
@@ -1179,7 +1203,6 @@
         currentTotal += Number(duration || 45);
       }
 
-      // الانتقال التلقائي لأول موعد متاح ومنع اختيار الموعد المحجوز
       if (currentSelected && !bookedCleanSlots.includes(cleanSlotString(currentSelected)) && Array.from(select.options).some(o => o.value === currentSelected && !o.disabled)) {
         select.value = currentSelected;
       } else if (firstAvailableValue) {
@@ -1310,7 +1333,6 @@
         return;
       }
 
-      // تحقق محلي فوري
       const isSlotAlreadyTakenLocally = todayAppointments.some(item => cleanSlotString(item.timeSlot) === cleanSlotString(timeSlot));
       if (isSlotAlreadyTakenLocally) {
         alert(`عذراً، الموعد (${timeSlot}) تم حجزه مسبقاً! تم تحديث القائمة لاختيار موعد متاح آخر.`);
@@ -1323,7 +1345,6 @@
 
       try {
         if (db) {
-          // فحص مباشر وفوري من قاعدة البيانات السحابية لمنع التضارب إذا حجز شخصان بنفس الثانية
           const checkSnapshot = await db.collection('appointments')
             .where('date', '==', todayStr)
             .get();
@@ -1375,7 +1396,8 @@
           generateTimeSlots(clinicConfig.startHour, clinicConfig.endHour, clinicConfig.slotDuration);
         }
 
-        alert(`تم تثبيت موعدك بنجاح في عيادة ${clinicConfig.doctorGender} ${clinicConfig.doctorName}\nالوقت المحجوز: ${timeSlot}`);
+        const currentTitle = clinicConfig.doctorName ? `${clinicConfig.doctorGender} ${clinicConfig.doctorName}` : "العيادة";
+        alert(`تم تثبيت موعدك بنجاح في عيادة ${currentTitle}\nالوقت المحجوز: ${timeSlot}`);
         document.getElementById('bookingForm').reset();
         document.getElementById('selectedServiceInput').value = 'كشف وفحص ألم طارئ';
       } catch (err) {
@@ -1763,15 +1785,15 @@
     // ==========================================
     function openClinicSettingsModal() {
       document.getElementById('settingDoctorGender').value = clinicConfig.doctorGender || "د.";
-      document.getElementById('settingDoctorName').value = clinicConfig.doctorName || "سعيد";
+      document.getElementById('settingDoctorName').value = clinicConfig.doctorName || "";
       document.getElementById('settingSpecialty').value = clinicConfig.specialty || "جراحة وزراعة وتجميل الأسنان";
-      document.getElementById('settingStartHour').value = clinicConfig.startHour || "12:00";
-      document.getElementById('settingEndHour').value = clinicConfig.endHour || "18:00";
+      document.getElementById('settingStartHour').value = clinicConfig.startHour || "10:30";
+      document.getElementById('settingEndHour').value = clinicConfig.endHour || "20:30";
       document.getElementById('settingScheduleNotes').value = clinicConfig.scheduleNotes || "";
       document.getElementById('settingMaxCapacity').value = clinicConfig.maxDailyCapacity || 15;
       document.getElementById('settingSlotDuration').value = clinicConfig.slotDuration || 45;
-      document.getElementById('settingAddress').value = clinicConfig.address || "حلب - شارع فيصل";
-      document.getElementById('settingPhone').value = clinicConfig.phone || "0991234567";
+      document.getElementById('settingAddress').value = clinicConfig.address || "";
+      document.getElementById('settingPhone').value = clinicConfig.phone || "";
       document.getElementById('settingShowRemainingSeats').checked = clinicConfig.showRemainingSeatsToPatients !== false;
 
       document.querySelectorAll('input[name="workDaySetting"]').forEach(cb => {
@@ -1808,10 +1830,12 @@
       try {
         if (db) {
           await db.collection('clinic_settings').doc('config').set(updated, { merge: true });
-        } else {
-          clinicConfig = { ...clinicConfig, ...updated };
-          applySettingsToUI(clinicConfig);
         }
+        clinicConfig = { ...clinicConfig, ...updated };
+        try {
+          localStorage.setItem('clinic_profile_cache', JSON.stringify(clinicConfig));
+        } catch(e) {}
+        applySettingsToUI(clinicConfig);
         closeClinicSettingsModal();
         alert("تم حفظ إعدادات العيادة بنجاح ومزامنتها لحظياً مع كافة أجهزة المرضى!");
       } catch (err) {
@@ -1927,10 +1951,10 @@
     }
 
     function printOrExportPdfReport() {
-      const fullTitle = `${clinicConfig.doctorGender} ${clinicConfig.doctorName}`;
-      document.getElementById('pdfDoctorName').textContent = `عيادة ${fullTitle}`;
+      const docName = clinicConfig.doctorName ? `${clinicConfig.doctorGender} ${clinicConfig.doctorName}` : "العيادة التخصصية";
+      document.getElementById('pdfDoctorName').textContent = `عيادة ${docName}`;
       document.getElementById('pdfSpecialty').textContent = clinicConfig.specialty;
-      document.getElementById('pdfClinicInfo').textContent = `المقر: ${clinicConfig.address} | هاتف: ${clinicConfig.phone}`;
+      document.getElementById('pdfClinicInfo').textContent = `المقر: ${clinicConfig.address || '---'} | هاتف: ${clinicConfig.phone || '---'}`;
       document.getElementById('pdfPrintDate').textContent = new Date().toLocaleDateString('ar-SY');
 
       const data = todayAppointments;
