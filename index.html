@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title id="pageBrowserTitle">حجز موعد - عيادة طب الأسنان</title>
+  <title id="pageBrowserTitle">حجز موعد - عيادة طب وجراحة الأسنان</title>
   
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -70,40 +70,100 @@
       border-radius: 8px;
     }
 
+    /* تأثير تغير ألوان النقطة التفاعلية الذكية دورياً */
+    @keyframes dynamicColorCycle {
+      0% {
+        background-color: #0d9488;
+        box-shadow: 0 0 0 0 rgba(13, 148, 136, 0.7), 0 8px 20px -4px rgba(13, 148, 136, 0.5);
+        transform: scale(1);
+      }
+      20% {
+        background-color: #0284c7;
+        box-shadow: 0 0 0 10px rgba(2, 132, 199, 0), 0 8px 20px -4px rgba(2, 132, 199, 0.5);
+        transform: scale(1.08);
+      }
+      40% {
+        background-color: #6366f1;
+        box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.7), 0 8px 20px -4px rgba(99, 102, 241, 0.5);
+        transform: scale(1);
+      }
+      60% {
+        background-color: #8b5cf6;
+        box-shadow: 0 0 0 10px rgba(139, 92, 246, 0), 0 8px 20px -4px rgba(139, 92, 246, 0.5);
+        transform: scale(1.08);
+      }
+      80% {
+        background-color: #059669;
+        box-shadow: 0 0 0 0 rgba(5, 150, 105, 0.7), 0 8px 20px -4px rgba(5, 150, 105, 0.5);
+        transform: scale(1);
+      }
+      100% {
+        background-color: #0d9488;
+        box-shadow: 0 0 0 0 rgba(13, 148, 136, 0.7), 0 8px 20px -4px rgba(13, 148, 136, 0.5);
+        transform: scale(1);
+      }
+    }
+
+    .smart-dot-animated {
+      animation: dynamicColorCycle 5s infinite ease-in-out;
+    }
+
+    /* وميض مؤشر الكتابة */
+    @keyframes cursorBlinkAnimation {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0; }
+    }
+    .typing-cursor-indicator {
+      display: inline-block;
+      width: 2.5px;
+      height: 14px;
+      background-color: #0d9488;
+      margin-right: 2px;
+      vertical-align: middle;
+      animation: cursorBlinkAnimation 0.65s infinite;
+    }
+
     @media print {
-      body * {
-        visibility: hidden !important;
+      body {
+        background-color: white !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        color: #0f172a !important;
       }
-      #printablePdfReport, #printablePdfReport * {
-        visibility: visible !important;
-      }
-      #printablePdfReport {
-        position: absolute;
-        left: 0;
-        top: 0;
-        width: 100%;
-        margin: 0;
-        padding: 20px;
-        background: white !important;
-        color: black !important;
-      }
-      .no-print {
+      
+      header, main, footer, .no-print, #doctorAuthModal, #clinicSettingsModal, #clinicBotContainer {
         display: none !important;
       }
+
+      #printablePdfReport {
+        display: block !important;
+        visibility: visible !important;
+        position: static !important;
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        background: white !important;
+        color: #0f172a !important;
+      }
+      
+      #printablePdfReport * {
+        visibility: visible !important;
+      }
+
       @page {
-        size: A4;
-        margin: 10mm;
+        size: A4 portrait;
+        margin: 12mm 14mm;
       }
     }
   </style>
 </head>
-<body class="min-h-screen text-slate-800 flex flex-col justify-between select-none pb-12">
+<body class="min-h-screen text-slate-800 flex flex-col justify-between select-none pb-14">
 
-  <!-- Mobile-Optimized Top App Bar -->
+  <!-- Top App Navigation Bar -->
   <header class="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200/80 shadow-sm no-print">
     <div class="max-w-4xl mx-auto px-4 py-2.5 sm:py-3 flex items-center justify-between gap-3">
       
-      <!-- Clinic Brand & Info (خالي من الأسماء الثابتة ويتحدث ديناميكياً) -->
+      <!-- Clinic Brand & Info -->
       <div class="flex items-center gap-2.5 min-w-0">
         <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-clinic-600 to-teal-400 text-white flex items-center justify-center shadow-md shadow-clinic-500/20 text-lg flex-shrink-0">
           🦷
@@ -123,7 +183,7 @@
       <!-- Doctor Controls Toolbar -->
       <div class="flex items-center gap-1.5 flex-shrink-0">
         <div id="doctorAuthBar" class="hidden flex items-center gap-1 sm:gap-2">
-          <!-- System Push Notification Permissions -->
+          <!-- System Push Notification Button -->
           <button id="systemNotifBtn" onclick="requestSystemNotificationPermission()" title="تفعيل إشعارات النظام" 
             class="p-2 text-slate-600 hover:text-clinic-600 bg-slate-100 rounded-xl transition-all text-xs flex items-center gap-1 cursor-pointer">
             <span id="systemNotifIcon">🔔</span>
@@ -154,7 +214,6 @@
         <button id="tabDoctorLive" onclick="switchDoctorView('dashboard')" 
           class="flex-1 py-1.5 px-3 rounded-lg text-xs font-bold transition-all bg-white text-clinic-700 shadow-sm border border-slate-200 text-center relative cursor-pointer">
           حجوزات اليوم
-          <span id="navNotificationBadge" class="hidden absolute -top-1 -right-1 bg-rose-500 text-white text-[9px] w-4 h-4 rounded-full flex items-center justify-center font-bold">0</span>
         </button>
         <button id="tabDoctorAnalytics" onclick="switchDoctorView('analytics')" 
           class="flex-1 py-1.5 px-3 rounded-lg text-xs font-semibold transition-all text-slate-600 hover:text-slate-900 border border-transparent text-center cursor-pointer">
@@ -404,7 +463,7 @@
             </h3>
           </div>
           <p class="text-[11px] text-slate-500 mt-0.5">
-            الحساب النشط: <span id="doctorLoggedInEmail" class="font-bold text-clinic-700">doctor@clinic.com</span>
+            الحساب النشط: <span id="doctorLoggedInEmail" class="font-bold text-clinic-700">saed30saed@gmail.com</span>
           </p>
         </div>
 
@@ -612,7 +671,7 @@
   <footer class="mt-8 border-t border-slate-200/80 bg-white py-4 px-4 text-center no-print">
     <div class="max-w-4xl mx-auto flex items-center justify-between text-[11px] text-slate-400">
       <div>
-        جميع الحقوق محفوظة © <span id="footerClinicName">عيادة طب الأسنان</span>
+        جميع الحقوق محفوظة © <span id="footerClinicName">عيادة طب وجراحة الأسنان</span>
       </div>
       
       <!-- زر تسجيل دخول الطبيب السري في أسفل الصفحة -->
@@ -626,84 +685,197 @@
     </div>
   </footer>
 
-  <!-- PRINTABLE PDF REPORT CONTAINER -->
+  <!-- ======================================================= -->
+  <!-- بوت العيادة التفاعلي الذكي (Smart Clinic Bot) -->
+  <!-- بدون أي أيقونات بشر أو روبوتات أو عيون أو أيدي نهائياً -->
+  <!-- ======================================================= -->
+  <div id="clinicBotContainer" class="fixed bottom-5 left-4 z-50 flex flex-col items-start gap-2 no-print select-none">
+    
+    <!-- فقاعة العبارات التلقائية لجذب الانتباه -->
+    <div id="botCalloutBubble" onclick="toggleClinicBotModal()"
+      class="cursor-pointer bg-white text-slate-800 text-[11px] font-bold px-3 py-1.5 rounded-2xl shadow-xl border border-slate-200/90 transition-all duration-300 transform -translate-y-1 hover:scale-105 flex items-center gap-1.5">
+      <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
+      <span id="botCalloutText">السلام عليكم</span>
+    </div>
+
+    <!-- النقطة التفاعلية الذكية متغيرة الألوان تلقائياً وبشكل دوري -->
+    <button id="botTriggerDot" onclick="toggleClinicBotModal()" 
+      class="smart-dot-animated w-12 h-12 rounded-full text-white shadow-2xl flex items-center justify-center text-sm font-black transition-transform duration-300 active:scale-90 cursor-pointer focus:outline-none"
+      title="المساعد الذكي للعيادة">
+      <span class="w-3.5 h-3.5 rounded-full bg-white/90 shadow-inner"></span>
+    </button>
+
+    <!-- نافذة الحوار والأسئلة التفاعلية -->
+    <div id="botChatWindow" class="hidden absolute bottom-16 left-0 w-[310px] sm:w-[350px] bg-white rounded-3xl shadow-2xl border border-slate-200/90 overflow-hidden flex flex-col transition-all duration-300">
+      
+      <!-- ترويسة نافذة البوت -->
+      <div class="bg-gradient-to-r from-clinic-900 via-clinic-800 to-teal-800 text-white p-3.5 flex items-center justify-between border-b border-teal-700/50">
+        <div class="flex items-center gap-2">
+          <div class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></div>
+          <div>
+            <h4 class="text-xs font-black" id="botHeaderClinicTitle">المساعد الذكي للعيادة</h4>
+            <p class="text-[10px] text-teal-200">إجابات مباشرة ومحدثة فورياً</p>
+          </div>
+        </div>
+        <button onclick="toggleClinicBotModal()" class="text-white/80 hover:text-white p-1 text-xs font-bold cursor-pointer">
+          ✕
+        </button>
+      </div>
+
+      <!-- منطقة عرض الحوار والرد بالكتابة التفاعلية -->
+      <div id="botChatMessages" class="p-3.5 space-y-3 max-h-[220px] overflow-y-auto custom-scrollbar bg-slate-50/70 text-xs">
+        
+        <!-- الترحيب المباشر المطلوب -->
+        <div class="bg-white p-3 rounded-2xl rounded-tr-none border border-slate-200/80 shadow-sm space-y-1">
+          <p class="font-extrabold text-slate-800 text-xs">السلام عليكم،</p>
+          <p class="text-slate-600 text-[11px] leading-relaxed">أهلاً وسهلاً بك في العيادة. تفضل باختيار أي سؤال أدناه وسأجيبك فوراً وفق معلومات الطبيب المعتمدة:</p>
+        </div>
+
+        <!-- صندوق عرض الإجابة بالكتابة التفاعلية الحية -->
+        <div id="botAnswerBox" class="hidden bg-clinic-50/90 p-3 rounded-2xl rounded-tr-none border border-clinic-200 shadow-sm space-y-1">
+          <div class="text-[10px] font-bold text-clinic-800 flex items-center gap-1">
+            <span class="w-1.5 h-1.5 rounded-full bg-clinic-600"></span>
+            <span>الإجابة المعتمدة:</span>
+          </div>
+          <div id="botTypingTarget" class="text-slate-800 text-[11px] leading-relaxed font-semibold"></div>
+        </div>
+
+      </div>
+
+      <!-- قائمة الأسئلة التفاعلية التلقائية -->
+      <div class="p-3 bg-white border-t border-slate-100 space-y-1.5">
+        <div class="text-[10px] font-bold text-slate-400 px-1">اختر سؤالاً للإجابة الفورية:</div>
+        <div id="botQuestionsContainer" class="grid grid-cols-1 gap-1 max-h-[160px] overflow-y-auto custom-scrollbar">
+          
+          <button onclick="askBotQuestion('name')" 
+            class="text-right text-[11px] font-bold p-2 rounded-xl bg-slate-50 hover:bg-clinic-50 text-slate-700 hover:text-clinic-800 border border-slate-200 hover:border-clinic-300 transition-all cursor-pointer flex items-center justify-between">
+            <span>🔹 ما هو اسم الطبيب وتخصصه؟</span>
+            <span class="text-slate-400 text-[10px]">←</span>
+          </button>
+
+          <button onclick="askBotQuestion('location')" 
+            class="text-right text-[11px] font-bold p-2 rounded-xl bg-slate-50 hover:bg-clinic-50 text-slate-700 hover:text-clinic-800 border border-slate-200 hover:border-clinic-300 transition-all cursor-pointer flex items-center justify-between">
+            <span>📍 ما هو موقع العيادة ورقم التواصل؟</span>
+            <span class="text-slate-400 text-[10px]">←</span>
+          </button>
+
+          <button onclick="askBotQuestion('hours')" 
+            class="text-right text-[11px] font-bold p-2 rounded-xl bg-slate-50 hover:bg-clinic-50 text-slate-700 hover:text-clinic-800 border border-slate-200 hover:border-clinic-300 transition-all cursor-pointer flex items-center justify-between">
+            <span>⏰ ما هي ساعات وأوقات الدوام؟</span>
+            <span class="text-slate-400 text-[10px]">←</span>
+          </button>
+
+          <button onclick="askBotQuestion('days')" 
+            class="text-right text-[11px] font-bold p-2 rounded-xl bg-slate-50 hover:bg-clinic-50 text-slate-700 hover:text-clinic-800 border border-slate-200 hover:border-clinic-300 transition-all cursor-pointer flex items-center justify-between">
+            <span>📅 ما هي أيام الدوام المعتمدة؟</span>
+            <span class="text-slate-400 text-[10px]">←</span>
+          </button>
+
+          <button onclick="askBotQuestion('seats')" 
+            class="text-right text-[11px] font-bold p-2 rounded-xl bg-slate-50 hover:bg-clinic-50 text-slate-700 hover:text-clinic-800 border border-slate-200 hover:border-clinic-300 transition-all cursor-pointer flex items-center justify-between">
+            <span>🪑 كم عدد المقاعد الشاغرة لليوم؟</span>
+            <span class="text-slate-400 text-[10px]">←</span>
+          </button>
+
+          <!-- زر يظهر تلقائياً عند قيام الطبيب بإضافة إعلان أو معلومات إضافية -->
+          <button id="botDynamicNoticeBtn" onclick="askBotQuestion('custom_notice')" 
+            class="hidden text-right text-[11px] font-bold p-2 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 transition-all cursor-pointer flex items-center justify-between">
+            <span>📢 هل توجد تنبيهات أو إعلانات من العيادة؟</span>
+            <span class="text-amber-600 text-[10px]">←</span>
+          </button>
+
+          <button onclick="askBotQuestion('medical_advice')" 
+            class="text-right text-[11px] font-bold p-2 rounded-xl bg-teal-50 hover:bg-teal-100 text-teal-800 border border-teal-200 transition-all cursor-pointer flex items-center justify-between">
+            <span>🌿 نصائح ومعلومات طبية لصحة الفم والأسنان</span>
+            <span class="text-teal-600 text-[10px]">←</span>
+          </button>
+
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- PRINTABLE OFFICIAL MEDICAL REPORT -->
   <div id="printablePdfReport" class="hidden">
-    <div style="border-bottom: 2.5px solid #0d9488; padding-bottom: 14px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: flex-start;">
-      <div>
-        <h1 style="font-size: 22px; font-weight: 800; color: #0f766e; margin: 0;" id="pdfDoctorName">عيادة طب وجراحة الأسنان</h1>
-        <p style="font-size: 12px; color: #475569; margin: 3px 0;" id="pdfSpecialty">جراحة وزراعة وتجميل الأسنان</p>
-        <p style="font-size: 11px; color: #64748b; margin: 0;" id="pdfClinicInfo">المقر: --- | هاتف: ---</p>
+    <div style="border-bottom: 3px solid #0d9488; padding-bottom: 12px; margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center;">
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <div style="width: 48px; height: 48px; border-radius: 12px; background: #0f766e; color: white; display: flex; align-items: center; justify-content: center; font-size: 24px;">
+          🦷
+        </div>
+        <div>
+          <h1 style="font-size: 20px; font-weight: 900; color: #0f766e; margin: 0; line-height: 1.2;" id="pdfDoctorName">عيادة طب وجراحة الأسنان</h1>
+          <p style="font-size: 11px; font-weight: 700; color: #334155; margin: 2px 0;" id="pdfSpecialty">جراحة وزراعة وتجميل الأسنان</p>
+          <p style="font-size: 10px; color: #64748b; margin: 0;" id="pdfClinicInfo">المقر: المقر المعتمد | هاتف: ---</p>
+        </div>
       </div>
-      <div style="text-align: left; font-size: 11px; color: #334155;">
-        <div style="font-weight: bold; font-size: 14px; color: #0f766e;">تقرير العيادة الرسمي للإحصائيات والحجوزات</div>
-        <div>تاريخ التقرير: <span id="pdfPrintDate">2026-09-20</span></div>
-        <div>نطاق الفترة: <span id="pdfPeriodLabel">الأسبوع الحالي</span></div>
-      </div>
-    </div>
-
-    <div style="background-color: #f8fafc; border: 1px solid #cbd5e1; border-radius: 10px; padding: 12px; margin-bottom: 16px;">
-      <h3 style="font-size: 12px; font-weight: bold; color: #1e293b; margin: 0 0 8px 0; border-bottom: 1px solid #e2e8f0; padding-bottom: 4px;">
-        ملخص المؤشرات الإنتاجية والتشغيلية (KPIs)
-      </h3>
-      <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; text-align: center;">
-        <div style="background: white; padding: 8px; border-radius: 6px; border: 1px solid #e2e8f0;">
-          <div style="font-size: 10px; color: #64748b;">إجمالي الحالات</div>
-          <div style="font-size: 16px; font-weight: bold; color: #0f766e;" id="pdfTotalPatients">0</div>
-        </div>
-        <div style="background: white; padding: 8px; border-radius: 6px; border: 1px solid #e2e8f0;">
-          <div style="font-size: 10px; color: #64748b;">مرضى جدد</div>
-          <div style="font-size: 16px; font-weight: bold; color: #059669;" id="pdfNewPatients">0</div>
-        </div>
-        <div style="background: white; padding: 8px; border-radius: 6px; border: 1px solid #e2e8f0;">
-          <div style="font-size: 10px; color: #64748b;">جلسات مراجعة</div>
-          <div style="font-size: 16px; font-weight: bold; color: #d97706;" id="pdfFollowupPatients">0</div>
-        </div>
-        <div style="background: white; padding: 8px; border-radius: 6px; border: 1px solid #e2e8f0;">
-          <div style="font-size: 10px; color: #64748b;">نسبة الإشغال</div>
-          <div style="font-size: 16px; font-weight: bold; color: #0284c7;" id="pdfUtilization">0%</div>
-        </div>
+      
+      <div style="text-align: left; font-size: 10px; color: #334155; border: 1px solid #cbd5e1; padding: 6px 10px; border-radius: 8px; background: #f8fafc;">
+        <div style="font-weight: 800; font-size: 12px; color: #0f766e; margin-bottom: 3px;">تقرير المواعيد والحجوزات الفردي</div>
+        <div>تاريخ الإصدار: <span style="font-weight: bold;" id="pdfPrintDate">--</span></div>
+        <div>نطاق التقرير: <span style="font-weight: bold; color: #0d9488;" id="pdfPeriodLabel">سجل اليوم</span></div>
       </div>
     </div>
 
-    <div style="margin-bottom: 16px;">
-      <h3 style="font-size: 11px; font-weight: bold; color: #1e293b; margin: 0 0 6px 0;">توزيع الإجراءات والخدمات الطبية:</h3>
-      <table style="width: 100%; border-collapse: collapse; font-size: 10px; text-align: right;">
+    <!-- KPIs Summary Cards -->
+    <div style="background-color: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 8px; padding: 10px; margin-bottom: 14px;">
+      <div style="font-size: 11px; font-weight: 800; color: #1e293b; margin-bottom: 8px; display: flex; justify-content: space-between;">
+        <span>📊 ملخص المؤشرات الإنتاجية والتشغيلية (Operational KPIs)</span>
+        <span style="font-size: 10px; color: #64748b;">الطاقة اليومية: <strong id="pdfMaxCap" style="color: #0f766e;">15</strong> مريض</span>
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; text-align: center;">
+        <div style="background: white; padding: 6px; border-radius: 6px; border: 1px solid #cbd5e1;">
+          <div style="font-size: 9px; color: #64748b; font-weight: bold;">إجمالي الحالات</div>
+          <div style="font-size: 15px; font-weight: 900; color: #0f766e;" id="pdfTotalPatients">0</div>
+        </div>
+        <div style="background: white; padding: 6px; border-radius: 6px; border: 1px solid #cbd5e1;">
+          <div style="font-size: 9px; color: #64748b; font-weight: bold;">مرضى جدد</div>
+          <div style="font-size: 15px; font-weight: 900; color: #059669;" id="pdfNewPatients">0</div>
+        </div>
+        <div style="background: white; padding: 6px; border-radius: 6px; border: 1px solid #cbd5e1;">
+          <div style="font-size: 9px; color: #64748b; font-weight: bold;">جلسات مراجعة</div>
+          <div style="font-size: 15px; font-weight: 900; color: #d97706;" id="pdfFollowupPatients">0</div>
+        </div>
+        <div style="background: white; padding: 6px; border-radius: 6px; border: 1px solid #cbd5e1;">
+          <div style="font-size: 9px; color: #64748b; font-weight: bold;">إجمالي المقاعد المحجوزة</div>
+          <div style="font-size: 15px; font-weight: 900; color: #4338ca;" id="pdfBookedSeats">0</div>
+        </div>
+        <div style="background: white; padding: 6px; border-radius: 6px; border: 1px solid #cbd5e1;">
+          <div style="font-size: 9px; color: #64748b; font-weight: bold;">نسبة الإشغال اليومي</div>
+          <div style="font-size: 15px; font-weight: 900; color: #0284c7;" id="pdfUtilization">0%</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Patients Registry Table -->
+    <div style="margin-bottom: 14px;">
+      <table style="width: 100%; border-collapse: collapse; font-size: 9.5px; text-align: right; border: 1.5px solid #cbd5e1;">
         <thead>
-          <tr style="background-color: #f1f5f9; border-bottom: 1px solid #cbd5e1;">
-            <th style="padding: 5px 8px;">الخدمة الطبية</th>
-            <th style="padding: 5px 8px; text-align: center;">عدد الحالات</th>
-            <th style="padding: 5px 8px; text-align: center;">النسبة</th>
+          <tr style="background-color: #0f766e; color: white; font-weight: bold;">
+            <th style="padding: 6px 4px; text-align: center; width: 25px; border: 1px solid #0d9488;">#</th>
+            <th style="padding: 6px 8px; border: 1px solid #0d9488;">اسم المريض</th>
+            <th style="padding: 6px 8px; border: 1px solid #0d9488;">الهاتف للتواصل</th>
+            <th style="padding: 6px 6px; text-align: center; border: 1px solid #0d9488;">نوع الزيارة</th>
+            <th style="padding: 6px 8px; border: 1px solid #0d9488;">الإجراء / الخدمة الطبية</th>
+            <th style="padding: 6px 6px; text-align: center; border: 1px solid #0d9488;">الموعد</th>
+            <th style="padding: 6px 4px; text-align: center; width: 35px; border: 1px solid #0d9488;">المقاعد</th>
+            <th style="padding: 6px 8px; border: 1px solid #0d9488;">ملاحظات / وصف الحالة</th>
           </tr>
         </thead>
-        <tbody id="pdfServicesTableBody"></tbody>
+        <tbody id="pdfPatientsTableBody">
+        </tbody>
       </table>
     </div>
 
-    <div>
-      <h3 style="font-size: 11px; font-weight: bold; color: #1e293b; margin: 0 0 6px 0;">سجل الحالات والمواعيد:</h3>
-      <table style="width: 100%; border-collapse: collapse; font-size: 9px; text-align: right;">
-        <thead>
-          <tr style="background-color: #f1f5f9; border-bottom: 1px solid #cbd5e1;">
-            <th style="padding: 5px 6px;">التاريخ</th>
-            <th style="padding: 5px 6px;">اسم المريض</th>
-            <th style="padding: 5px 6px;">الهاتف</th>
-            <th style="padding: 5px 6px;">النوع</th>
-            <th style="padding: 5px 6px;">الخدمة</th>
-            <th style="padding: 5px 6px; text-align: center;">المقاعد</th>
-            <th style="padding: 5px 6px;">الموعد</th>
-          </tr>
-        </thead>
-        <tbody id="pdfPatientsTableBody"></tbody>
-      </table>
-    </div>
-
-    <div style="margin-top: 30px; padding-top: 12px; border-top: 1px dashed #94a3b8; display: flex; justify-content: space-between; align-items: flex-end; font-size: 10px; color: #475569;">
+    <!-- Official Stamp & Signatures Box -->
+    <div style="margin-top: 24px; padding-top: 10px; border-top: 1.5px dashed #94a3b8; display: flex; justify-content: space-between; align-items: flex-end; font-size: 9.5px; color: #334155;">
       <div>
-        <p style="margin: 0; font-weight: bold;">مستخرج آلياً من نظام إدارة عيادة الأسنان السحابي.</p>
-        <p style="margin: 2px 0 0 0; color: #94a3b8;">توقيع واستلام إدارة العيادة: ______________________</p>
+        <p style="margin: 0; font-weight: bold; color: #0f766e;">تقرير صادر ومعتمد من نظام إدارة عيادة الأسنان السحابي الموحد.</p>
+        <p style="margin: 3px 0 0 0; color: #64748b;">توقيع واستلام إدارة الاستقبال: ________________________________</p>
       </div>
-      <div style="text-align: center; border: 1.5px dashed #94a3b8; padding: 14px 28px; border-radius: 8px; color: #94a3b8; font-weight: bold;">
-        ختم العيادة الرسمي
+      <div style="text-align: center; border: 1.5px dashed #0d9488; padding: 10px 24px; border-radius: 8px; color: #0f766e; font-weight: 800; background: #f0fdfa;">
+        ختم وتوقيع الطبيب المعتمد
       </div>
     </div>
   </div>
@@ -733,8 +905,8 @@
       <!-- Auth Form (Sign In / Register) -->
       <form id="doctorAuthForm" onsubmit="handleDoctorAuthSubmit(event)" class="space-y-3 text-xs">
         <div>
-          <label class="block font-bold text-slate-700 mb-1" for="doctorAuthEmail">البريد الإلكتروني</label>
-          <input type="email" id="doctorAuthEmail" required placeholder="doctor@example.com" dir="ltr"
+          <label class="block font-bold text-slate-700 mb-1" for="doctorAuthEmail">البريد الإلكتروني للطبيب</label>
+          <input type="email" id="doctorAuthEmail" required placeholder="saed30saed@gmail.com" dir="ltr"
             class="w-full px-3 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-clinic-500 font-semibold text-slate-800">
         </div>
 
@@ -817,7 +989,7 @@
           <div>
             <label class="block font-bold text-slate-700 mb-1">اللقب</label>
             <select id="settingDoctorGender" class="w-full px-2.5 py-2 rounded-xl border border-slate-300 font-bold">
-              <option value="د.">د. (طبيب)</option>
+              <option value="د." selected>د. (طبيب)</option>
               <option value="دكتورة">دكتورة (طبيبة)</option>
             </select>
           </div>
@@ -855,7 +1027,15 @@
           <label class="block font-bold text-slate-700 mb-1">ملاحظات ومواعيد الدوام المخصصة (فترات العمل)</label>
           <textarea id="settingScheduleNotes" rows="2" placeholder="مثال: من الساعة 9:00 صباحاً إلى 3:00 بعد الظهر، ومن الساعة 6:00 مساءً إلى 9:00 ليلاً"
             class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-clinic-500"></textarea>
-          <p class="text-[10px] text-slate-500 mt-1">تظهر هذه المواعيد والتفاصيل فوراً للمريض في شريط الحجز العلوي كأوقات الدوام الرسمية.</p>
+          <p class="text-[10px] text-slate-500 mt-1">تظهر هذه المواعيد والتفاصيل فوراً للمريض في شريط الحجز العلوي كأوقات الدوام الرسمية وتضاف للبوت تلقائياً.</p>
+        </div>
+
+        <!-- Bot Additional Notice or Announcements -->
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">إعلانات أو معلومات إضافية للمرضى (تظهر في البوت الذكي تلقائياً)</label>
+          <textarea id="settingBotCustomNotice" rows="2" placeholder="مثال: نرحب بكم! يوجد خصم 20% على جلسات تنظيف الأسنان هذا الأسبوع، والعيادة تفتح استثنائياً يوم الجمعة للحالات الإسعافية."
+            class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-clinic-500"></textarea>
+          <p class="text-[10px] text-slate-500 mt-1">أي معلومة أو إعلان تكتبه هنا يتحول فوراً وبشكل تلقائي إلى سؤال متاح في نافذة البوت الذكي.</p>
         </div>
 
         <!-- Work Days -->
@@ -960,7 +1140,7 @@
   <!-- APPLICATION LOGIC SCRIPT -->
   <script>
     // ==========================================
-    // 1. تهيئة FIREBASE الحقيقية لمشروع العيادة
+    // 1. تهيئة FIREBASE الحقيقية لمشروع العيادة الفردية (doctor-78f2e)
     // ==========================================
     const firebaseConfig = {
       apiKey: "AIzaSyAcceOtq7hfFIZtiGswX1pnlelrDF5sDlE",
@@ -987,7 +1167,7 @@
       console.warn("تعذر الاتصال بـ Firebase:", err);
     }
 
-    // الحالة الافتراضية المحايدة تماماً (خالية من أي اسم أو موقع مسبق لتجنب الوميض)
+    // الحالة الافتراضية
     const defaultClinicConfig = {
       doctorGender: "د.",
       doctorName: "",
@@ -995,6 +1175,7 @@
       startHour: "10:30",
       endHour: "20:30",
       scheduleNotes: "",
+      botCustomNotice: "",
       workDays: ["sat", "sun", "mon", "tue", "wed", "thu"],
       maxDailyCapacity: 15,
       slotDuration: 45,
@@ -1004,10 +1185,10 @@
       clinicManuallyClosed: false
     };
 
-    // القراءة الفورية من ذاكرة التخزين المحلية للمتصفح (Instant Cache) لمنع أي وميض
+    // القراءة الفورية من ذاكرة التخزين المحلية للمتصفح
     let clinicConfig = { ...defaultClinicConfig };
     try {
-      const stored = localStorage.getItem('clinic_profile_cache');
+      const stored = localStorage.getItem('clinic_profile_cache_saed');
       if (stored) {
         clinicConfig = { ...defaultClinicConfig, ...JSON.parse(stored) };
       }
@@ -1031,11 +1212,11 @@
       fri: "الجمعة"
     };
 
-    // تطبيق الإعدادات الفورية من الذاكرة المحلية قبل بدء الاتصال بالإنترنت
+    // تطبيق الإعدادات الفورية من الذاكرة المحلية
     applySettingsToUI(clinicConfig);
 
     // ==========================================
-    // 2. إدارة جلسة الطبيب (Authentication Listener)
+    // 2. إدارة جلسة الطبيب
     // ==========================================
     if (auth) {
       auth.onAuthStateChanged((user) => {
@@ -1066,7 +1247,7 @@
     }
 
     // ==========================================
-    // 3. المزامنة اللحظية للإعدادات (Realtime Settings)
+    // 3. المزامنة اللحظية للإعدادات
     // ==========================================
     function listenToClinicSettingsRealtime() {
       if (!db) {
@@ -1079,13 +1260,11 @@
           if (doc.exists) {
             const data = doc.data();
             clinicConfig = { ...clinicConfig, ...data };
-            // حفظ في ذاكرة التخزين المحلية للمتصفح
             try {
-              localStorage.setItem('clinic_profile_cache', JSON.stringify(clinicConfig));
+              localStorage.setItem('clinic_profile_cache_saed', JSON.stringify(clinicConfig));
             } catch(e) {}
             applySettingsToUI(clinicConfig);
           } else {
-            // مستند جديد فارغ
             applySettingsToUI(clinicConfig);
           }
         }, (error) => {
@@ -1099,14 +1278,13 @@
       const docTitle = (cfg.doctorGender || "د.");
       const fullDoctorDisplay = docName ? `${docTitle} ${docName}` : "طب وجراحة الأسنان";
 
-      // ترويسة المتصفح والشريط العلوي
       document.getElementById('pageBrowserTitle').textContent = `حجز موعد - عيادة ${fullDoctorDisplay}`;
       document.getElementById('navClinicTitle').textContent = `عيادة ${fullDoctorDisplay}`;
       document.getElementById('navDoctorGenderBadge').textContent = cfg.doctorGender === 'دكتورة' ? 'طبيبة أسنان' : 'طبيب أسنان';
       document.getElementById('bannerDoctorName').textContent = `عيادة ${fullDoctorDisplay} - ${cfg.specialty || "جراحة وزراعة وتجميل الأسنان"}`;
       document.getElementById('footerClinicName').textContent = `عيادة ${fullDoctorDisplay}`;
+      document.getElementById('botHeaderClinicTitle').textContent = `عيادة ${fullDoctorDisplay}`;
 
-      // أوقات وملاحظات الدوام
       const bannerScheduleNotes = document.getElementById('bannerScheduleNotesText');
       if (bannerScheduleNotes) {
         if (cfg.scheduleNotes && cfg.scheduleNotes.trim() !== "") {
@@ -1116,7 +1294,6 @@
         }
       }
 
-      // العنوان والهاتف
       const bannerLocation = document.getElementById('bannerLocationText');
       if (bannerLocation) {
         bannerLocation.textContent = (cfg.address && cfg.address.trim() !== "") ? cfg.address : "المقر المعتمد للعيادة";
@@ -1134,15 +1311,23 @@
         الدوام: ${daysText || "طوال الأسبوع"} (${cfg.startHour || "10:30"} - ${cfg.endHour || "20:30"})
       `;
 
-      // الطاقة الاستيعابية القصوى
       document.getElementById('maxCapacityDisplay').textContent = cfg.maxDailyCapacity || 15;
 
-      // إظهار/إخفاء عداد المقاعد المتبقية للمرضى
       const seatsContainer = document.getElementById('seatsCounterContainer');
       if (cfg.showRemainingSeatsToPatients === false && !currentDoctorUser) {
         seatsContainer.classList.add('hidden');
       } else {
         seatsContainer.classList.remove('hidden');
+      }
+
+      // إظهار زر الإعلان في البوت إذا أضاف الطبيب إعلاناً
+      const dynamicNoticeBtn = document.getElementById('botDynamicNoticeBtn');
+      if (dynamicNoticeBtn) {
+        if (cfg.botCustomNotice && cfg.botCustomNotice.trim() !== "") {
+          dynamicNoticeBtn.classList.remove('hidden');
+        } else {
+          dynamicNoticeBtn.classList.add('hidden');
+        }
       }
 
       generateTimeSlots(cfg.startHour, cfg.endHour, cfg.slotDuration);
@@ -1218,7 +1403,7 @@
     }
 
     // ==========================================
-    // 4. الاستماع اللحظي للحجوزات (Firestore Appointments)
+    // 4. الاستماع اللحظي للحجوزات
     // ==========================================
     function listenToAppointmentsRealtime() {
       if (!db) return;
@@ -1376,24 +1561,6 @@
           };
 
           await db.collection('appointments').add(bookingRecord);
-        } else {
-          const bookingRecord = {
-            id: 'local_' + Date.now(),
-            name,
-            phone,
-            type,
-            service,
-            partySize,
-            timeSlot,
-            notes,
-            date: todayStr,
-            createdAt: new Date(),
-            timeStr: new Date().toLocaleTimeString('ar-SY', { hour: '2-digit', minute: '2-digit' })
-          };
-          todayAppointments.push(bookingRecord);
-          renderAppointmentsTable();
-          recalculateCapacity();
-          generateTimeSlots(clinicConfig.startHour, clinicConfig.endHour, clinicConfig.slotDuration);
         }
 
         const currentTitle = clinicConfig.doctorName ? `${clinicConfig.doctorGender} ${clinicConfig.doctorName}` : "العيادة";
@@ -1790,6 +1957,7 @@
       document.getElementById('settingStartHour').value = clinicConfig.startHour || "10:30";
       document.getElementById('settingEndHour').value = clinicConfig.endHour || "20:30";
       document.getElementById('settingScheduleNotes').value = clinicConfig.scheduleNotes || "";
+      document.getElementById('settingBotCustomNotice').value = clinicConfig.botCustomNotice || "";
       document.getElementById('settingMaxCapacity').value = clinicConfig.maxDailyCapacity || 15;
       document.getElementById('settingSlotDuration').value = clinicConfig.slotDuration || 45;
       document.getElementById('settingAddress').value = clinicConfig.address || "";
@@ -1819,6 +1987,7 @@
         startHour: document.getElementById('settingStartHour').value,
         endHour: document.getElementById('settingEndHour').value,
         scheduleNotes: document.getElementById('settingScheduleNotes').value.trim(),
+        botCustomNotice: document.getElementById('settingBotCustomNotice').value.trim(),
         workDays: selectedDays,
         maxDailyCapacity: Number(document.getElementById('settingMaxCapacity').value) || 15,
         slotDuration: Number(document.getElementById('settingSlotDuration').value) || 45,
@@ -1833,11 +2002,11 @@
         }
         clinicConfig = { ...clinicConfig, ...updated };
         try {
-          localStorage.setItem('clinic_profile_cache', JSON.stringify(clinicConfig));
+          localStorage.setItem('clinic_profile_cache_saed', JSON.stringify(clinicConfig));
         } catch(e) {}
         applySettingsToUI(clinicConfig);
         closeClinicSettingsModal();
-        alert("تم حفظ إعدادات العيادة بنجاح ومزامنتها لحظياً مع كافة أجهزة المرضى!");
+        alert("تم حفظ إعدادات العيادة بنجاح ومزامنتها لحظياً مع كافة أجهزة المرضى والبوت الذكي!");
       } catch (err) {
         alert("فشل حفظ الإعدادات: " + err.message);
       }
@@ -1951,35 +2120,60 @@
     }
 
     function printOrExportPdfReport() {
-      const docName = clinicConfig.doctorName ? `${clinicConfig.doctorGender} ${clinicConfig.doctorName}` : "العيادة التخصصية";
+      const cfg = clinicConfig || {};
+      const docName = (cfg.doctorName && cfg.doctorName.trim() !== '') ? `${cfg.doctorGender || 'د.'} ${cfg.doctorName}` : "عيادة طب الأسنان";
       document.getElementById('pdfDoctorName').textContent = `عيادة ${docName}`;
-      document.getElementById('pdfSpecialty').textContent = clinicConfig.specialty;
-      document.getElementById('pdfClinicInfo').textContent = `المقر: ${clinicConfig.address || '---'} | هاتف: ${clinicConfig.phone || '---'}`;
-      document.getElementById('pdfPrintDate').textContent = new Date().toLocaleDateString('ar-SY');
+      document.getElementById('pdfSpecialty').textContent = cfg.specialty || 'جراحة وزراعة وتجميل الأسنان';
+      document.getElementById('pdfClinicInfo').textContent = `المقر: ${cfg.address || 'المقر المعتمد'} | هاتف: ${cfg.phone || '---'}`;
+      
+      const now = new Date();
+      document.getElementById('pdfPrintDate').textContent = now.toLocaleDateString('ar-SY') + ' - ' + now.toLocaleTimeString('ar-SY', { hour: '2-digit', minute: '2-digit' });
 
       const data = todayAppointments;
       const total = data.length;
       const newCount = data.filter(a => a.type === 'new').length;
       const followCount = data.filter(a => a.type === 'followup').length;
+      const bookedSeats = data.reduce((sum, item) => sum + (Number(item.partySize) || 1), 0);
+      const maxCap = Number(cfg.maxDailyCapacity) || 15;
+      const utilRate = Math.min(100, Math.round((bookedSeats / maxCap) * 100));
 
+      document.getElementById('pdfMaxCap').textContent = maxCap;
       document.getElementById('pdfTotalPatients').textContent = total;
       document.getElementById('pdfNewPatients').textContent = newCount;
       document.getElementById('pdfFollowupPatients').textContent = followCount;
-      document.getElementById('pdfUtilization').textContent = document.getElementById('analyticsUtilizationRate').textContent;
+      document.getElementById('pdfBookedSeats').textContent = bookedSeats;
+      document.getElementById('pdfUtilization').textContent = `${utilRate}%`;
 
-      document.getElementById('pdfPatientsTableBody').innerHTML = data.map((item, idx) => `
-        <tr style="border-bottom: 1px solid #f1f5f9;">
-          <td style="padding: 4px 6px;">${item.date || 'اليوم'}</td>
-          <td style="padding: 4px 6px; font-weight: bold;">${item.name}</td>
-          <td style="padding: 4px 6px;" dir="ltr">${item.phone}</td>
-          <td style="padding: 4px 6px;">${item.type === 'new' ? 'جديد' : 'مراجعة'}</td>
-          <td style="padding: 4px 6px;">${item.service}</td>
-          <td style="padding: 4px 6px; text-align: center;">${item.partySize}</td>
-          <td style="padding: 4px 6px;">${item.timeSlot}</td>
-        </tr>
-      `).join('');
+      const patientsTbody = document.getElementById('pdfPatientsTableBody');
+      if (data.length === 0) {
+        patientsTbody.innerHTML = `
+          <tr>
+            <td colspan="8" style="text-align: center; padding: 20px; color: #64748b; font-size: 11px;">
+              لا توجد مواعيد مسجلة في جدول العيادة اليوم.
+            </td>
+          </tr>
+        `;
+      } else {
+        patientsTbody.innerHTML = data.map((item, idx) => {
+          const bg = (idx % 2 === 0) ? '#ffffff' : '#f8fafc';
+          return `
+            <tr style="background-color: ${bg}; border-bottom: 1px solid #e2e8f0;">
+              <td style="padding: 6px 4px; text-align: center; font-weight: bold; border: 1px solid #cbd5e1;">${idx + 1}</td>
+              <td style="padding: 6px 8px; font-weight: 800; border: 1px solid #cbd5e1;">${item.name}</td>
+              <td style="padding: 6px 8px; font-family: monospace; border: 1px solid #cbd5e1;" dir="ltr">${item.phone}</td>
+              <td style="padding: 6px 6px; text-align: center; border: 1px solid #cbd5e1;">${item.type === 'new' ? 'جديد' : 'مراجعة'}</td>
+              <td style="padding: 6px 8px; font-weight: 600; color: #0f766e; border: 1px solid #cbd5e1;">${item.service}</td>
+              <td style="padding: 6px 6px; text-align: center; border: 1px solid #cbd5e1;">${item.timeSlot}</td>
+              <td style="padding: 6px 4px; text-align: center; font-weight: bold; border: 1px solid #cbd5e1;">${item.partySize}</td>
+              <td style="padding: 6px 8px; color: #475569; border: 1px solid #cbd5e1;">${item.notes || '---'}</td>
+            </tr>
+          `;
+        }).join('');
+      }
 
-      window.print();
+      setTimeout(() => {
+        window.print();
+      }, 150);
     }
 
     function exportAnalyticsCsv() {
@@ -1999,7 +2193,128 @@
     }
 
     // ==========================================
-    // 12. انطلاق التطبيق
+    // 12. منطق البوت التفاعلي الذكي ومؤثر الكتابة
+    // ==========================================
+    const botPhrases = [
+      "السلام عليكم",
+      "تفضل",
+      "هنا",
+      "تفضل بالدخول",
+      "هيا اضغط",
+      "أنا هنا تفضل"
+    ];
+    let botPhraseIndex = 0;
+    let typingTimer = null;
+
+    // تدوير عبارات لفت الانتباه دورياً
+    function cycleBotCallouts() {
+      const el = document.getElementById('botCalloutText');
+      if (!el) return;
+      botPhraseIndex = (botPhraseIndex + 1) % botPhrases.length;
+      el.style.opacity = '0';
+      setTimeout(() => {
+        el.textContent = botPhrases[botPhraseIndex];
+        el.style.opacity = '1';
+      }, 250);
+    }
+    setInterval(cycleBotCallouts, 2800);
+
+    function toggleClinicBotModal() {
+      const windowEl = document.getElementById('botChatWindow');
+      if (windowEl.classList.contains('hidden')) {
+        windowEl.classList.remove('hidden');
+        document.getElementById('botCalloutBubble').classList.add('hidden');
+      } else {
+        windowEl.classList.add('hidden');
+        document.getElementById('botCalloutBubble').classList.remove('hidden');
+      }
+    }
+
+    // كتابة الرد حرفاً بحرف مع وميض المؤشر
+    function typeBotAnswer(text) {
+      const answerBox = document.getElementById('botAnswerBox');
+      const target = document.getElementById('botTypingTarget');
+      const messagesContainer = document.getElementById('botChatMessages');
+
+      if (typingTimer) clearInterval(typingTimer);
+      answerBox.classList.remove('hidden');
+      target.innerHTML = '<span class="typing-cursor-indicator"></span>';
+      
+      let i = 0;
+      typingTimer = setInterval(() => {
+        if (i < text.length) {
+          const currentText = text.substring(0, i + 1).replace(/\n/g, '<br>');
+          target.innerHTML = currentText + '<span class="typing-cursor-indicator"></span>';
+          i++;
+          messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        } else {
+          clearInterval(typingTimer);
+          target.innerHTML = text.replace(/\n/g, '<br>');
+          messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+      }, 20);
+    }
+
+    function askBotQuestion(topic) {
+      const docName = clinicConfig.doctorName ? `${clinicConfig.doctorGender} ${clinicConfig.doctorName}` : "الطبيب المعتمد";
+      const daysText = (clinicConfig.workDays || []).map(d => dayNamesAr[d]).join('، ') || "السبت إلى الخميس";
+      const bookedSeats = todayAppointments.reduce((sum, item) => sum + (Number(item.partySize) || 1), 0);
+      const maxCap = Number(clinicConfig.maxDailyCapacity) || 15;
+      const seatsLeft = Math.max(0, maxCap - bookedSeats);
+
+      let responseText = "";
+
+      switch (topic) {
+        case 'name':
+          responseText = `طبيب العيادة المشرف:\n${docName}\nالتخصص: ${clinicConfig.specialty || "طب وجراحة وتجميل الأسنان"}.`;
+          break;
+
+        case 'location':
+          const loc = clinicConfig.address || "المقر المعتمد للعيادة";
+          const ph = clinicConfig.phone || "غير محدد حالياً";
+          responseText = `موقع العيادة المعتمد:\n📍 ${loc}\n📞 هاتف الاستقبال والتواصل: ${ph}`;
+          break;
+
+        case 'hours':
+          const notes = clinicConfig.scheduleNotes ? `\n\nتفاصيل الفترات والدوام:\n${clinicConfig.scheduleNotes}` : '';
+          responseText = `ساعات الدوام المعتمدة:\n⏰ من الساعة ${clinicConfig.startHour || "10:30"} حتى ${clinicConfig.endHour || "20:30"}${notes}`;
+          break;
+
+        case 'days':
+          responseText = `أيام العمل واستقبال المراجعين أسبوعياً هي:\n📅 ${daysText}`;
+          break;
+
+        case 'seats':
+          if (clinicConfig.clinicManuallyClosed) {
+            responseText = `⚠️ الحجز متوقف مؤقتاً لليوم بقرار مباشر من إدارة العيادة.`;
+          } else if (seatsLeft <= 0) {
+            responseText = `⚠️ اكتملت كافة حجوزات ومقاعد اليوم (${maxCap} مقعداً). نعتذر منك، ويمكنك حجز موعد في أيام الدوام القادمة.`;
+          } else {
+            responseText = `المقاعد المتبقية والمتاحة للحجز اليوم هي: (${seatsLeft}) مقعداً من أصل (${maxCap}) مقعد مخصص لليوم.`;
+          }
+          break;
+
+        case 'custom_notice':
+          responseText = `📢 تنبيه وإعلان من إدارة العيادة:\n${clinicConfig.botCustomNotice || "لا توجد تنبيهات إضافية حالياً."}`;
+          break;
+
+        case 'medical_advice':
+          const tips = [
+            "🌿 السواك سُنّة نبوية ومطهرة للفم: يحتوي السواك الطبيعي على ألياف ناعمة ومواد فعالة مطهرة تمنع ترسب الجير وتساعد في محاربة التهاب اللثة ورائحة الفم.",
+            "🦷 التنظيف السليم: نظف أسنانك بفرشاة ناعمة مرتين يومياً، وبشكل خاص قبل النوم، بحركات دائرية لطيفة من اللثة باتجاه حافة السن.",
+            "🧵 خيط الأسنان الطبي: استخدامه يومياً يزيل بقايا الطعام العالقة بين الأسنان التي لا تستطيع الفرشاة الوصول إليها، وهو خط الدفاع الأول ضد تسوس الجذور.",
+            "💧 جفاف الفم وشرب الماء: شرب كميات كافية من الماء يحفز إفراز اللعاب الذي يُعد الحامي الطبيعي للميناء من الأحماض والبكتيريا.",
+            "🩹 إسعاف ألم الأسنان المفاجئ: عند حدوث ألم طارئ، يُفضل المضمضة بماء دافئ مع القليل من الملح، وتجنب وضع الأسبرين مباشرة على اللثة لتفادي حرق الأنسجة."
+          ];
+          responseText = tips.join('\n\n');
+          break;
+      }
+
+      typeBotAnswer(responseText);
+    }
+
+    // ==========================================
+    // 13. انطلاق التطبيق
     // ==========================================
     window.addEventListener('DOMContentLoaded', () => {
       listenToClinicSettingsRealtime();
